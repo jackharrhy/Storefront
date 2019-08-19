@@ -57,8 +57,11 @@ public final class Storefront extends JavaPlugin {
             System.out.println(url.getFile());
         }
 
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(Storefront.class.getClassLoader());
         Javalin app = Javalin.create().start(7000);
         app.get("/", ctx -> ctx.result("Hello World"));
+        Thread.currentThread().setContextClassLoader(classLoader);
     }
 
     @Override

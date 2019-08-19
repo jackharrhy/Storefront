@@ -1,0 +1,7 @@
+name: Storefront
+version: ${project.version}
+main: com.jackharrhy.storefront.Storefront
+api-version: 1.14
+prefix: storefront
+authors: [cheesemany]
+description: whatcha buying whatcha selling

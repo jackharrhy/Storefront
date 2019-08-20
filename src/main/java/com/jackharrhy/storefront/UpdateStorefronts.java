@@ -50,14 +50,11 @@ public class UpdateStorefronts extends BukkitRunnable {
         for (Location loc : storage.getAllLocations()) {
             BlockState blockStateFromDb = loc.getWorld().getBlockAt(loc).getState();
 
-            plugin.getLogger().info("ran");
-
             if (blockStateFromDb instanceof Chest) {
                 Chest chest = (Chest) blockStateFromDb;
                 storage.updateStorefront(loc, inventoryToJsonString(chest.getInventory()));
             } else {
                 storage.removeStorefront(loc);
-                plugin.getLogger().info("remove" + loc.toString());
             }
         }
     }

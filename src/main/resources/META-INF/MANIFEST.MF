@@ -1,2 +1,0 @@
-Manifest-Version: 1.0
-Class-Path: lib/websocket-server-9.4.20.v20190813.jar

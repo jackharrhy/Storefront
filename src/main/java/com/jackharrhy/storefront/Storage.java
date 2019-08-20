@@ -1,126 +1,168 @@
 package com.jackharrhy.storefront;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.jdbi.v3.core.Jdbi;
 
-import java.sql.*;
+import java.io.File;
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class Storage {
     private Logger logger;
-    private Connection conn;
-    private String url;
+    private Jdbi jdbi;
 
-    public static String serializeLocation(Location location) {
+    private static String serializeLocation(Location location) {
         return "" + location.getWorld().getName()
                 + ":" + location.getX()
                 + ":" + location.getY()
                 + ":" + location.getZ();
     }
 
+    private Location deserializeLocation(String serializedLocation) {
+        String[] splitLocation = serializedLocation.split(":");
+        System.out.println(splitLocation);
+        return new Location(
+                Bukkit.getWorld(splitLocation[0]),
+                Double.parseDouble(splitLocation[1]),
+                Double.parseDouble(splitLocation[2]),
+                Double.parseDouble(splitLocation[3])
+        );
+    }
+
     public Storage(Logger logger, String fileName) {
         this.logger = logger;
 
-        url = "jdbc:sqlite:" + fileName;
+        File dbFile = new File(fileName);
 
-        try (Connection conn = DriverManager.getConnection(url)) {
-            if (conn != null) {
-                initialize(getConnection());
+        if (!dbFile.exists()) {
+            try {
+                dbFile.createNewFile();
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, e.getMessage());
+                e.printStackTrace();
             }
-        } catch (SQLException e) {
-            logger.log(Level.SEVERE, e.getMessage());
-            e.printStackTrace();
         }
+
+        String connectionString = "jdbc:sqlite:" + fileName;
+        this.jdbi = Jdbi.create(connectionString);
+        this.initialize();
     }
 
-    public Connection getConnection() {
-        try {
-            if (conn == null || conn.isClosed()) {
-                conn = DriverManager.getConnection(url);
-            }
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, e.getMessage());
-            e.printStackTrace();
-        }
-        return conn;
-    }
-
-    private void initialize(Connection conn) {
-        String sql = "CREATE TABLE IF NOT EXISTS chest ("
+    private void initialize() {
+        String createChestTableSql = "CREATE TABLE IF NOT EXISTS chest ("
                 + "	id INTEGER PRIMARY KEY,"
                 + " owner TEXT NOT NULL, "
                 + " location TEXT NOT NULL, "
                 + "	contents TEXT NOT NULL, "
                 + "	modified INTEGER NOT NULL"
                 + ");";
-
-        try {
-            Statement stmt = conn.createStatement();
-            stmt.execute(sql);
-        } catch (SQLException e) {
-            logger.log(Level.SEVERE, e.getMessage());
-            e.printStackTrace();
-        }
+        jdbi.useHandle(handle -> handle.execute(createChestTableSql));
     }
 
     public Boolean updateStorefront(Player owner, Location location, String contents) {
         String locationSerialized = serializeLocation(location);
 
-        Connection conn = getConnection();
-        String sql = "INSERT OR REPLACE INTO chest (id, owner, location, contents) VALUES (" +
-                "(SELECT id FROM chest WHERE location = ?), " +
-                "?, ?, ?)";
+        String insertOrUpdateStorefrontSql = "INSERT OR REPLACE INTO chest (id, owner, location, contents, modified) " +
+                "VALUES ((SELECT id FROM chest WHERE location = :location), :owner, :location, :contents, :modified)";
 
-        try {
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setString(1, locationSerialized);
-            pstmt.setString(2, owner.getUniqueId().toString());
-            pstmt.setString(3, locationSerialized);
-            pstmt.setString(4, contents);
-            pstmt.executeUpdate();
+        int updated = jdbi.withHandle(handle -> handle.createUpdate(insertOrUpdateStorefrontSql)
+                .bind("location", locationSerialized)
+                .bind("owner", owner.getUniqueId().toString())
+                .bind("contents", contents)
+                .bind("modified", Instant.now().getEpochSecond())
+                .execute());
+
+        if (updated == 1) {
             return true;
-        } catch (SQLException e) {
-            logger.log(Level.SEVERE, e.getMessage());
-            e.printStackTrace();
+        } else if (updated == 0) {
             return false;
+        } else {
+            logger.log(Level.SEVERE, "Updated more than one storefront on a single call");
+            return null;
+        }
+    }
+
+    public Boolean updateStorefront(Location location, String contents) {
+        String locationSerialized = serializeLocation(location);
+
+        String updateStorefrontSql = "UPDATE chest SET contents = :contents, modified = :modified " +
+                "WHERE id = (SELECT id FROM chest WHERE location = :location)";
+
+        int updated = jdbi.withHandle(handle -> handle.createUpdate(updateStorefrontSql)
+                .bind("location", locationSerialized)
+                .bind("contents", contents)
+                .bind("modified", Instant.now().getEpochSecond())
+                .execute());
+
+        if (updated == 1) {
+            return true;
+        } else if (updated == 0) {
+            return false;
+        } else {
+            logger.log(Level.SEVERE, "Updated more than one storefront on a single call");
+            return null;
         }
     }
 
     public Boolean removeStorefront(Player owner, Location location) {
-        String locationSerialized = serializeLocation(location);
+        String removeStorefrontSql = "DELETE FROM chest WHERE location = ? AND owner = ?";
 
-        Connection conn = getConnection();
-        String sql = "DELETE FROM chest WHERE location = ? AND owner = ?";
+        int removed = jdbi.withHandle(handle -> handle.execute(
+                removeStorefrontSql, serializeLocation(location), owner.getUniqueId().toString()
+        ));
 
-        try {
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setString(1, locationSerialized);
-            pstmt.setString(2, owner.getUniqueId().toString());
-            pstmt.executeUpdate();
+        if (removed == 1) {
             return true;
-        } catch (SQLException e) {
-            logger.log(Level.SEVERE, e.getMessage());
-            e.printStackTrace();
+        } else if (removed == 0) {
             return false;
+        } else {
+            logger.log(Level.SEVERE, "Removed more than one storefront on a single call");
+            return null;
         }
     }
 
-    public String owner(Location location) {
-        Connection conn = getConnection();
-        String sql = "SELECT owner FROM chest WHERE location = ?";
+    public Boolean removeStorefront(Location location) {
+        String removeStorefrontSql = "DELETE FROM chest WHERE location = ?";
 
-        try {
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setString(1, serializeLocation(location));
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                return rs.getString(1);
-            }
-        } catch (SQLException e) {
-            logger.log(Level.SEVERE, e.getMessage());
-            e.printStackTrace();
+        int removed = jdbi.withHandle(handle -> handle.execute(
+                removeStorefrontSql, serializeLocation(location)
+        ));
+
+        if (removed == 1) {
+            return true;
+        } else if (removed == 0) {
+            return false;
+        } else {
+            logger.log(Level.SEVERE, "Removed more than one storefront on a single call");
+            return null;
         }
-        return null;
+    }
+
+    public List<String> getAllContents() {
+        return jdbi.withHandle(handle -> handle.createQuery("SELECT contents FROM chest")
+                .mapTo(String.class)
+                .list());
+    }
+
+    public List<Location> getAllLocations() {
+        return jdbi.withHandle(handle -> handle.createQuery("SELECT location FROM chest")
+                .mapTo(String.class)
+                .list()
+                .stream()
+                .map((string) -> deserializeLocation(string))
+                .collect(Collectors.toList()));
+    }
+
+    public Optional<String> owner(Location location) {
+        String getOwnerFromChestSql = "SELECT owner FROM chest WHERE location = ?";
+        return jdbi.withHandle(handle -> handle.select(getOwnerFromChestSql, serializeLocation(location))
+                .mapTo(String.class)
+                .findFirst());
     }
 }

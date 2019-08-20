@@ -84,7 +84,7 @@ public class SignListener implements Listener {
             return;
         }
 
-        if (storage.owner(chest.getLocation()).equals(player.getUniqueId().toString())) {
+        if (storage.owner(chest.getLocation()).get().equals(player.getUniqueId().toString())) {
             this.plugin.removeStorefront(player, chest.getLocation());
         } else {
             player.sendMessage(ChatColor.RED + "This isn't your storefront!");
@@ -120,9 +120,10 @@ public class SignListener implements Listener {
         }
 
         Chest chest = getChestFromSign(sign);
-
-        if (chest != null) {
-            this.plugin.updateStorefront(player, chest, sign);
+        if (chest == null) {
+            return;
         }
+
+        this.plugin.updateStorefront(player, chest, sign);
     }
 }

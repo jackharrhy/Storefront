@@ -1,0 +1,33 @@
+body {
+  margin: 0;
+}
+
+#root {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+#refresh {
+  width: 100%;
+}
+
+.storefront {
+  margin: 1em;
+  display: flex;
+  flex-wrap: wrap;
+  width: 24em;
+}
+
+.item {
+  height: 2.25em;
+  width: 2.25em;
+  border: 2px solid #555;
+  border-bottom: 2px solid #EEE;
+  border-right: 2px solid #EEE;
+  background-color: #9B9B9B;
+}
+
+.item img {
+  height: 100%;
+  width: 100%;
+}

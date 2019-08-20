@@ -1,0 +1,178 @@
+[
+  [
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  ],
+  [
+    {
+      "amount": 1,
+      "meta": {
+        "meta-type": "BOOK",
+        "pages": [
+          "# this is a book§0\n§0\n§0- with§0\n§0- some§0\n§0- markdown§0\n§0- in§0\n§0- it§0\n§0\n§0<i>no xss!</i>§0\n§0\n§0<script>§0\n§0alert(\"hello, mc!\");§0\n§0</script>",
+          "next page§0\n§0\n§0\n§0\n§0\n§0\n§0\n§0\n§0\n§0\n§0\n§0\n§0\n§0wowwwwwwwwwwwwwwww",
+          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        ]
+      },
+      "name": "Book and Quill",
+      "key": "minecraft:writable_book"
+    },
+    {
+      "amount": 64,
+      "meta": {
+        "meta-type": "UNSPECIFIC"
+      },
+      "name": "Cobblestone",
+      "key": "minecraft:cobblestone"
+    },
+    {
+      "amount": 2,
+      "meta": {
+        "meta-type": "UNSPECIFIC"
+      },
+      "name": "Apple",
+      "key": "minecraft:apple"
+    },
+    {
+      "amount": 20,
+      "meta": {
+        "meta-type": "UNSPECIFIC"
+      },
+      "name": "Cocoa Beans",
+      "key": "minecraft:cocoa_beans"
+    },
+    {
+      "amount": 1,
+      "meta": {
+        "meta-type": "UNSPECIFIC"
+      },
+      "name": "Granite",
+      "key": "minecraft:granite"
+    },
+    {
+      "amount": 1,
+      "meta": {
+        "meta-type": "UNSPECIFIC"
+      },
+      "name": "Granite",
+      "key": "minecraft:granite"
+    },
+    {
+      "amount": 1,
+      "meta": {
+        "meta-type": "UNSPECIFIC"
+      },
+      "name": "Granite",
+      "key": "minecraft:granite"
+    },
+    {
+      "amount": 1,
+      "meta": {
+        "meta-type": "UNSPECIFIC"
+      },
+      "name": "Granite",
+      "key": "minecraft:granite"
+    },
+    {
+      "amount": 1,
+      "meta": {
+        "meta-type": "UNSPECIFIC"
+      },
+      "name": "Diorite",
+      "key": "minecraft:diorite"
+    },
+    null,
+    null,
+    null,
+    {
+      "amount": 1,
+      "meta": {
+        "meta-type": "TILE_ENTITY",
+        "blockMaterial": "OAK_SIGN"
+      },
+      "name": "Oak Sign",
+      "key": "minecraft:oak_sign"
+    },
+    {
+      "amount": 1,
+      "meta": {
+        "meta-type": "UNSPECIFIC"
+      },
+      "name": "Oak Boat",
+      "key": "minecraft:oak_boat"
+    },
+    {
+      "amount": 1,
+      "meta": {
+        "meta-type": "UNSPECIFIC"
+      },
+      "name": "Oak Boat",
+      "key": "minecraft:oak_boat"
+    },
+    null,
+    {
+      "amount": 1,
+      "meta": {
+        "meta-type": "UNSPECIFIC"
+      },
+      "name": "Diorite",
+      "key": "minecraft:diorite"
+    },
+    {
+      "amount": 1,
+      "meta": {
+        "meta-type": "UNSPECIFIC"
+      },
+      "name": "Diorite",
+      "key": "minecraft:diorite"
+    },
+    {
+      "amount": 1,
+      "meta": {
+        "meta-type": "UNSPECIFIC",
+        "enchants": {
+          "DIG_SPEED": 5,
+          "LOOT_BONUS_BLOCKS": 3,
+          "DURABILITY": 3
+        },
+        "repair-cost": 31,
+        "Damage": 856
+      },
+      "name": "Diamond Pickaxe",
+      "key": "minecraft:diamond_pickaxe"
+    },
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  ]
+]

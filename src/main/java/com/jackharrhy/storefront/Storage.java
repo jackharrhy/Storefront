@@ -26,7 +26,6 @@ public class Storage {
 
     private Location deserializeLocation(String serializedLocation) {
         String[] splitLocation = serializedLocation.split(":");
-        System.out.println(splitLocation);
         return new Location(
                 Bukkit.getWorld(splitLocation[0]),
                 Double.parseDouble(splitLocation[1]),

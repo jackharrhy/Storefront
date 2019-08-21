@@ -1,29 +1,67 @@
 body {
   margin: 0;
+  font-family: "Minecraft Regular";
+  src: url("Minecraft-Regular.eot?") format("eot"), url("Minecraft-Regular.woff") format("woff"), url("Minecraft-Regular.ttf") format("truetype"), url("Minecraft-Regular.svg#Minecraft-Regular") format("svg");
+  font-weight: normal;
+  font-style: normal;
 }
 
-#root {
+#app-root {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
 }
 
 #refresh {
   width: 100%;
+  text-align: center;
+}
+
+.user {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: column;
+}
+.user-name {
+  text-align: center;
+}
+.user-name p {
+  font-size: 2rem;
+  margin: 0;
 }
 
 .storefront {
-  margin: 1em;
   display: flex;
   flex-wrap: wrap;
-  width: 24em;
+  margin: 1em;
+  width: 34rem;
+  justify-content: center;
+  align-content: center;
 }
 
+.sign {
+  margin-right: 1rem;
+  text-align: center;
+  background-color: #B38C51;
+  width: 10rem;
+  height: 5.4rem;
+  align-self: center;
+}
+.sign p {
+  margin: 0.5rem;
+}
+
+.items {
+  display: flex;
+  flex-wrap: wrap;
+  width: 22.5rem;
+}
 .item {
-  height: 2.25em;
-  width: 2.25em;
-  border: 2px solid #555;
-  border-bottom: 2px solid #EEE;
-  border-right: 2px solid #EEE;
+  height: 2.25rem;
+  width: 2.25rem;
+  border: 0.1rem solid #555;
+  border-bottom: 0.1rem solid #EEE;
+  border-right: 0.1rem solid #EEE;
   background-color: #9B9B9B;
 }
 

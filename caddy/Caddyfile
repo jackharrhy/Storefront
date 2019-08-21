@@ -1,0 +1,6 @@
+localhost:8080 {
+    proxy / 127.0.0.1:3000/
+    proxy /storefront/ 127.0.0.1:7000/ {
+        without /storefront
+    }
+}

@@ -1,15 +1,22 @@
 body {
   margin: 0;
   font-family: "Minecraft Regular";
-  src: url("Minecraft-Regular.eot?") format("eot"), url("Minecraft-Regular.woff") format("woff"), url("Minecraft-Regular.ttf") format("truetype"), url("Minecraft-Regular.svg#Minecraft-Regular") format("svg");
+  src: url("font/mc-Regular.eot?") format("eot"), url("font/mc-Regular.woff") format("woff"), url("font/mc-Regular.ttf") format("truetype"), url("font/mc-Regular.svg#mc-Regular") format("svg");
   font-weight: normal;
   font-style: normal;
+  background-image: url("stone-backdrop.png");
 }
 
 #app-root {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
+}
+
+header {
+  width: 100%;
+  color: white;
+  text-align: center;
 }
 
 #refresh {
@@ -28,6 +35,7 @@ body {
 .user-name p {
   font-size: 2rem;
   margin: 0;
+  color: white;
 }
 
 .storefront {
@@ -46,6 +54,7 @@ body {
   width: 10rem;
   height: 5.4rem;
   align-self: center;
+  background-image: url("sign.png");
 }
 .sign p {
   margin: 0.5rem;
@@ -64,8 +73,27 @@ body {
   border-right: 0.1rem solid #EEE;
   background-color: #9B9B9B;
 }
-
 .item img {
   height: 100%;
   width: 100%;
+  image-rendering: pixelated;
+}
+.item-meta {
+  position: absolute;
+}
+
+#material-tester {
+  display: flex;
+  flex-wrap: wrap;
+}
+#material-tester p {
+  text-align: center;
+}
+#material-tester > div {
+  width: 10%;
+  display: flex;
+  flex-direction: column;
+}
+#material-tester .item {
+  align-self: center;
 }

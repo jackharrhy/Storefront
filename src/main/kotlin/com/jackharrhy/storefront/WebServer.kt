@@ -1,7 +1,9 @@
 package com.jackharrhy.storefront
 
 import com.google.gson.GsonBuilder
+import com.google.gson.JsonElement
 import io.javalin.Javalin
+import org.bukkit.Material
 
 class WebServer(plugin: Storefront, storage: Storage) {
     init {
@@ -14,6 +16,15 @@ class WebServer(plugin: Storefront, storage: Storage) {
             ctx.res.contentType = "application/json"
             val allContents = storage.allContents
             ctx.result(GsonBuilder().create().toJson(allContents))
+        }
+
+        app.get("/all-materials") { ctx ->
+            ctx.res.contentType = "application/json"
+            var allMats: HashMap<String, JsonElement> = HashMap()
+            for (mat in Material.values() ) {
+                allMats[mat.key.key] = GsonBuilder().create().toJsonTree(mat.getData())
+            }
+            ctx.result(GsonBuilder().create().toJson(allMats))
         }
 
         plugin.logger.info("WebServer now running")

@@ -1,7 +1,6 @@
 package com.jackharrhy.storefront
 
 import org.bukkit.ChatColor
-import org.bukkit.Location
 import org.bukkit.block.Sign
 import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.entity.Player
@@ -27,30 +26,45 @@ class Storefront : JavaPlugin() {
 
         SignListener(this, storage!!)
         WebServer(this, storage!!)
-        UpdateStorefronts(this, storage!!).runTaskTimer(this, 20, 20)
+        UpdateStorefronts(this, storage!!).runTaskTimer(this, 2400L, 2400L)
     }
 
     override fun onDisable() {
         logger.info(description.name + " has been enabled")
     }
 
-    fun removeStorefront(player: Player, chestLocation: Location) {
-        if (storage!!.removeStorefront(player, chestLocation)!!) {
-            player.sendMessage(ChatColor.AQUA.toString() + "Storefront removed")
-        } else {
+    fun removeStorefront(player: Player, chest: Chest) : Boolean {
+        val chestLocation = chest.location
+        val playerUuid = player.uniqueId.toString()
+
+        val playerUuidFromDb = storage!!.ownerUUID(chestLocation).get().removeSurrounding("\"")
+        if (playerUuidFromDb == playerUuid) {
+            if (storage!!.removeStorefront(player, chest.location)!!) {
+                player.sendMessage(ChatColor.AQUA.toString() + "Storefront removed")
+                return true
+            }
             player.sendMessage(ChatColor.RED.toString() + "Failed to remove storefront")
+            return false
         }
+        player.sendMessage(ChatColor.RED.toString() + "This isn't your storefront!")
+        return false
     }
 
-    fun updateStorefront(player: Player, chest: Chest, sign: Sign) {
-        val chestInventory = chest.inventory
-        val chestLocation = chest.location
-        val contents = inventoryToJsonString(chestInventory)
-
-        if (storage!!.updateStorefront(player, chestLocation, contents, sign.lines)!!) {
+    fun updateStorefront(player: Player, chest: Chest, sign: Sign) : Boolean {
+        if (storage!!.updateStorefront(player, chest.location, inventoryToJsonString(chest.inventory), sign.lines)!!) {
             player.sendMessage(ChatColor.AQUA.toString() + "Storefront updated")
-        } else {
-            player.sendMessage(ChatColor.RED.toString() + "Failed to update storefront")
+            return true
         }
+        player.sendMessage(ChatColor.RED.toString() + "Failed to update storefront")
+        return false
+    }
+
+    fun updateStorefront(player: Player, chest: Chest) : Boolean {
+        if (storage!!.updateStorefront(chest.location, inventoryToJsonString(chest.inventory))!!) {
+            player.sendMessage(ChatColor.AQUA.toString() + "Storefront updated")
+            return true
+        }
+        player.sendMessage(ChatColor.RED.toString() + "Failed to update storefront")
+        return false
     }
 }

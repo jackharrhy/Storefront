@@ -1,6 +1,9 @@
 package com.jackharrhy.storefront
 
 import com.google.gson.GsonBuilder
+import com.okkero.skedule.SynchronizationContext
+import com.okkero.skedule.schedule
+import org.bukkit.Bukkit
 import org.bukkit.block.Chest
 import org.bukkit.inventory.Inventory
 import org.bukkit.plugin.java.JavaPlugin
@@ -32,15 +35,24 @@ fun inventoryToJsonString(inventory: Inventory): String {
 }
 
 class UpdateStorefronts(private val plugin: JavaPlugin, private val storage: Storage) : BukkitRunnable() {
+    private val scheduler = Bukkit.getScheduler()
     override fun run() {
-        for (loc in storage.allLocations) {
-            val blockStateFromDb = loc.world.getBlockAt(loc).state
+        scheduler.schedule(plugin, SynchronizationContext.ASYNC) {
+            repeating(10)
+            for (loc in storage.allLocations) {
+                switchContext(SynchronizationContext.SYNC)
+                val blockStateFromDb = loc.world.getBlockAt(loc).state
 
-            if (blockStateFromDb is Chest) {
-                storage.updateStorefront(loc, inventoryToJsonString(blockStateFromDb.inventory))
-            } else {
-                storage.removeStorefront(loc)
-                plugin.logger.info("Removed storefront since the block was no longer found")
+                if (blockStateFromDb is Chest) {
+                    val blockStateFromDbInventory = blockStateFromDb.blockInventory
+                    switchContext(SynchronizationContext.ASYNC)
+                    storage.updateStorefront(loc, inventoryToJsonString(blockStateFromDbInventory))
+                } else {
+                    switchContext(SynchronizationContext.ASYNC)
+                    storage.removeStorefront(loc)
+                    plugin.logger.info("Removed storefront since the block was no longer found")
+                }
+                yield()
             }
         }
     }

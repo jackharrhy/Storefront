@@ -1,6 +1,5 @@
 package com.jackharrhy.storefront
 
-import org.bukkit.ChatColor
 import org.bukkit.block.*
 import org.bukkit.block.data.Directional
 import org.bukkit.block.data.type.WallSign
@@ -41,7 +40,7 @@ class SignListener(private val plugin: Storefront, private val storage: Storage)
 
         val chest = getChestFromSign(sign)
 
-        if (chest != null) this.plugin.updateStorefront(event.player, chest, sign)
+        if (chest != null) plugin.updateStorefront(event.player, chest, sign)
     }
 
     @EventHandler
@@ -57,12 +56,7 @@ class SignListener(private val plugin: Storefront, private val storage: Storage)
 
         val chest = getChestFromSign(sign) ?: return
 
-        if (storage.ownerUUID(chest.location).get().removeSurrounding("\"") == player.uniqueId.toString()) {
-            this.plugin.removeStorefront(player, chest.location)
-        } else {
-            player.sendMessage(ChatColor.RED.toString() + "This isn't your storefront!")
-            event.isCancelled = true
-        }
+        event.isCancelled = !this.plugin.removeStorefront(player, chest)
     }
 
     private fun getStorefrontSign(block: Block): Sign? {
@@ -83,6 +77,10 @@ class SignListener(private val plugin: Storefront, private val storage: Storage)
 
         val chest = getChestFromSign(sign) ?: return
 
-        this.plugin.updateStorefront(player, chest, sign)
+        if (storage.storefrontExists(chest.location)) {
+            this.plugin.updateStorefront(player, chest)
+        } else {
+            this.plugin.updateStorefront(player, chest, sign)
+        }
     }
 }

@@ -99,14 +99,14 @@ class Storage(private val logger: Logger, fileName: String) {
     }
 
     private fun initialize() {
-        val createChestTableSql = ("CREATE TABLE IF NOT EXISTS chest ("
-                + "	id INTEGER PRIMARY KEY,"
-                + " owner TEXT NOT NULL, "
-                + " location TEXT NOT NULL, "
-                + "	contents TEXT NOT NULL, "
-                + "	modified INTEGER NOT NULL, "
-                + "	description TEXT NOT NULL"
-                + ");")
+        val createChestTableSql = ("CREATE TABLE IF NOT EXISTS chest ( "
+                + "id INTEGER PRIMARY KEY, "
+                + "owner TEXT NOT NULL, "
+                + "location TEXT NOT NULL, "
+                + "contents TEXT NOT NULL, "
+                + "modified INTEGER NOT NULL, "
+                + "description TEXT NOT NULL "
+                + ")")
         jdbi.useHandle<RuntimeException> { handle -> handle.execute(createChestTableSql) }
     }
 
@@ -169,36 +169,43 @@ class Storage(private val logger: Logger, fileName: String) {
         val removeStorefrontSql = "DELETE FROM chest WHERE location = ? AND owner = ?"
 
         val removed = jdbi.withHandle<Int, RuntimeException> { handle ->
-            handle.execute(
-                    removeStorefrontSql, serializeLocation(location), serializeOwner(owner)
-            )
+            handle.execute(removeStorefrontSql, serializeLocation(location), serializeOwner(owner))
         }
 
         when (removed) {
             1 -> return true
             0 -> return false
-            else -> {
-                logger.log(Level.SEVERE, "Removed more than one storefront on a single call")
-            }
+            else -> logger.log(Level.SEVERE, "Removed an unexpected number of storefronts ($removed)")
         }
         return null
+    }
+
+    fun storefrontExists(location: Location): Boolean {
+        val storefrontCountSql = "SELECT COUNT(*) FROM chest WHERE location = ?"
+
+        val count = jdbi.withHandle<Int, RuntimeException> { handle ->
+            handle.select(storefrontCountSql, serializeLocation(location)).mapTo(Int::class.java).findOnly()
+        }
+
+        when (count) {
+            1 -> return true
+            0 -> return false
+            else -> logger.log(Level.SEVERE, "Found an unexpected number of storefronts on a single call ($count)")
+        }
+        return true
     }
 
     fun removeStorefront(location: Location): Boolean? {
         val removeStorefrontSql = "DELETE FROM chest WHERE location = ?"
 
         val removed = jdbi.withHandle<Int, RuntimeException> { handle ->
-            handle.execute(
-                    removeStorefrontSql, serializeLocation(location)
-            )
+            handle.execute(removeStorefrontSql, serializeLocation(location))
         }
 
         when (removed) {
             1 -> return true
             0 -> return false
-            else -> {
-                logger.log(Level.SEVERE, "Removed more than one storefront on a single call")
-            }
+            else -> logger.log(Level.SEVERE, "Removed more than one storefront on a single call")
         }
         return null
     }

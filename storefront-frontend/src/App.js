@@ -40,13 +40,15 @@ function App() {
       </header>
       {
         Object.entries(storefront).map(([userUUID, usersStorefronts]) => (
-          <div className="user">
+          <div className="user" key={userUUID}>
             <div className="user-name">
               <p title={userUUID}>{usersStorefronts[0].owner.name}</p>
             </div>
-            <Storefront
-              usersStorefronts={usersStorefronts}
-            />
+            <div className="storefront-container">
+              <Storefront
+                usersStorefronts={usersStorefronts}
+              />
+            </div>
           </div>
         ))
       }

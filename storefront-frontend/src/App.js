@@ -13,12 +13,18 @@ function App() {
       const storefrontJson = await storefrontResponse.json();
       const players = {};
       storefrontJson.map(async (sf) => {
-        sf.contents.map((item) => {
+        sf.id = btoa(Math.random()).substring(0,12);
+        sf.contents.filter((item) => {
           if (item !== null) {
             item.image = item.key.slice(10,item.key.length);
           }
         });
-        players[sf.owner.uuid] ? players[sf.owner.uuid].push(sf) : players[sf.owner.uuid] = [sf];
+
+        if (players[sf.owner.uuid]) {
+          players[sf.owner.uuid].push(sf)
+        } else {
+          players[sf.owner.uuid] = [sf];
+        }
       })
       setStorefront(players);
     };

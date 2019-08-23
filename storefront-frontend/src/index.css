@@ -17,6 +17,10 @@ body {
   justify-content: center;
 }
 
+.empty {
+  opacity: 0.6;
+}
+
 header {
   width: 100%;
   color: white;
@@ -52,8 +56,8 @@ header {
 .storefront {
   display: flex;
   flex-wrap: wrap;
-  margin: 1em;
-  width: 34rem;
+  margin: 1.25rem 0.75rem;
+  width: 35rem;
   justify-content: center;
   align-content: center;
 }
@@ -75,22 +79,33 @@ header {
   display: flex;
   flex-wrap: wrap;
   width: 22.5rem;
+  border: 0.1rem solid #555;
+  border-top: 0.1rem solid #FFF;
+  border-left: 0.1rem solid #FFF;
+  border-radius: 0.2rem;
+  background-color: #C6C6C6;
+  justify-content: center;
+  padding: 0.5rem 0.2rem;
 }
 .item {
+  display: flex;
   height: 2.25rem;
   width: 2.25rem;
   border: 0.1rem solid #555;
   border-bottom: 0.1rem solid #EEE;
   border-right: 0.1rem solid #EEE;
   background-color: #9B9B9B;
+  justify-content: center;
 }
 .item img {
-  height: 100%;
-  width: 100%;
+  align-self: center;
+  height: 90%;
+  width: 90%;
   image-rendering: pixelated;
 }
 .item-meta {
   position: absolute;
+  bottom: 0;
 }
 
 #material-tester {
@@ -107,4 +122,16 @@ header {
 }
 #material-tester .item {
   align-self: center;
+}
+
+@media only screen and (max-width: 700px) {
+  .sign {
+    margin: 0 0 1rem 0;
+  }
+  .storefront {
+    width: auto;
+  }
+  .items {
+    width: auto;
+  }
 }

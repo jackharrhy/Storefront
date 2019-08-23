@@ -34,18 +34,24 @@ class SignListener(private val plugin: Storefront, private val storage: Storage)
         } else null
     }
 
-    private fun handleNewStorefront(event: SignChangeEvent) {
-        val block = event.block
-        val sign = block.state as? Sign ?: return
+    private fun getStorefrontSign(block: Block): Sign? {
+        val blockState = block.state as? Sign ?: return null
 
-        val chest = getChestFromSign(sign)
-
-        if (chest != null) plugin.updateStorefront(event.player, chest, sign)
+        return if (blockState.getLine(0).equals("[storefront]", ignoreCase = true)) {
+            blockState
+        } else null
     }
 
     @EventHandler
     fun onSignChange(event: SignChangeEvent) {
-        if (event.getLine(0)!!.toLowerCase() == "[storefront]") handleNewStorefront(event)
+        if (event.getLine(0)!!.toLowerCase() == "[storefront]") {
+            val block = event.block
+            val sign = block.state as? Sign ?: return
+
+            val chest = getChestFromSign(sign)
+
+            if (chest != null) plugin.newStorefront(event.player, chest, sign)
+        }
     }
 
     @EventHandler
@@ -59,14 +65,6 @@ class SignListener(private val plugin: Storefront, private val storage: Storage)
         event.isCancelled = !this.plugin.removeStorefront(player, chest)
     }
 
-    private fun getStorefrontSign(block: Block): Sign? {
-        val blockState = block.state as? Sign ?: return null
-
-        return if (blockState.getLine(0).equals("[storefront]", ignoreCase = true)) {
-            blockState
-        } else null
-    }
-
     @EventHandler
     fun onSignInteract(event: PlayerInteractEvent) {
         val player = event.player
@@ -78,9 +76,9 @@ class SignListener(private val plugin: Storefront, private val storage: Storage)
         val chest = getChestFromSign(sign) ?: return
 
         if (storage.storefrontExists(chest.location)) {
-            this.plugin.updateStorefront(player, chest)
-        } else {
             this.plugin.updateStorefront(player, chest, sign)
+        } else {
+            this.plugin.newStorefront(player, chest, sign)
         }
     }
 }

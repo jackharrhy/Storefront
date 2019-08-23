@@ -6,6 +6,7 @@ import empty from '../empty.png';
 
 const imageFallback = (event) => {
   event.target.src = 'missing.png';
+  event.target.className = 'empty'
 };
 
 export default ({item}) => {
@@ -18,16 +19,18 @@ export default ({item}) => {
   } else {
     const alt = `${item.name} (${item.amount})`;
     return (
-      <div
-        className="item"
-        onClick={() => setShowMeta(!showMeta)}
-      >
-        <img
-          title={alt}
-          alt={alt}
-          src={`./images/${item.image}.png`}
-          onError={imageFallback}
-        />
+      <>
+        <div
+          className="item"
+          onClick={() => setShowMeta(!showMeta)}
+        >
+          <img
+            title={alt}
+            alt={alt}
+            src={`./images/${item.image}.png`}
+            onError={imageFallback}
+          />
+        </div>
         {
           showMeta ? (
             <div className="item-meta">
@@ -35,7 +38,7 @@ export default ({item}) => {
             </div>
           ) : null
         }
-      </div>
+      </>
     );
   }
 };

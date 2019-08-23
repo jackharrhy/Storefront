@@ -9,7 +9,7 @@ export default () => {
       id="material-tester"
     >
       {
-        Object.entries(allMaterialsJson).map(([key, enumerator]) => (
+        Object.entries(allMaterialsJson).map(([key]) => (
           <div>
             <p>{`${key}`}</p>
             <div className="item">

@@ -44,7 +44,7 @@ class UpdateStorefronts(private val plugin: JavaPlugin, private val storage: Sto
                 val blockStateFromDb = loc.world.getBlockAt(loc).state
 
                 if (blockStateFromDb is Chest) {
-                    val blockStateFromDbInventory = blockStateFromDb.blockInventory
+                    val blockStateFromDbInventory = blockStateFromDb.inventory
                     switchContext(SynchronizationContext.ASYNC)
                     storage.updateStorefront(loc, inventoryToJsonString(blockStateFromDbInventory))
                 } else {

@@ -110,7 +110,7 @@ class Storage(private val logger: Logger, fileName: String) {
         jdbi.useHandle<RuntimeException> { handle -> handle.execute(createChestTableSql) }
     }
 
-    fun updateStorefront(owner: Player, location: Location, contents: String, description: Array<String>): Boolean? {
+    fun newStorefront(owner: Player, location: Location, contents: String, description: Array<String>): Boolean? {
         val ownerSerialized = serializeOwner(owner)
         val locationSerialized = serializeLocation(location)
         val flatDescription = flattenDescription(description)
@@ -164,6 +164,32 @@ class Storage(private val logger: Logger, fileName: String) {
         return null
     }
 
+    fun updateStorefront(location: Location, contents: String, description: Array<String>): Boolean? {
+        val locationSerialized = serializeLocation(location)
+        val flatDescription = flattenDescription(description)
+
+        val updateStorefrontSql = "UPDATE chest SET " +
+                "contents = :contents, modified = :modified, description = :description " +
+                "WHERE id = (SELECT id FROM chest WHERE location = :location)"
+
+        val updated = jdbi.withHandle<Int, RuntimeException> { handle ->
+            handle.createUpdate(updateStorefrontSql)
+                    .bind("location", locationSerialized)
+                    .bind("contents", contents)
+                    .bind("modified", Instant.now().epochSecond)
+                    .bind("description", flatDescription)
+                    .execute()
+        }
+
+        when (updated) {
+            1 -> return true
+            0 -> return false
+            else -> {
+                logger.log(Level.SEVERE, "Updated more than one storefront on a single call")
+            }
+        }
+        return null
+    }
 
     fun removeStorefront(owner: Player, location: Location): Boolean? {
         val removeStorefrontSql = "DELETE FROM chest WHERE location = ? AND owner = ?"

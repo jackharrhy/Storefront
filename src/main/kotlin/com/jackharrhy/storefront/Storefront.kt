@@ -40,7 +40,7 @@ class Storefront : JavaPlugin() {
         val playerUuidFromDb = storage!!.ownerUUID(chestLocation).get().removeSurrounding("\"")
         if (playerUuidFromDb == playerUuid) {
             if (storage!!.removeStorefront(player, chest.location)!!) {
-                player.sendMessage(ChatColor.AQUA.toString() + "Storefront removed")
+                player.sendMessage(ChatColor.YELLOW.toString() + "Storefront removed")
                 return true
             }
             player.sendMessage(ChatColor.RED.toString() + "Failed to remove storefront")
@@ -50,17 +50,17 @@ class Storefront : JavaPlugin() {
         return false
     }
 
-    fun updateStorefront(player: Player, chest: Chest, sign: Sign) : Boolean {
-        if (storage!!.updateStorefront(player, chest.location, inventoryToJsonString(chest.inventory), sign.lines)!!) {
-            player.sendMessage(ChatColor.AQUA.toString() + "Storefront updated")
+    fun newStorefront(player: Player, chest: Chest, sign: Sign) : Boolean {
+        if (storage!!.newStorefront(player, chest.location, inventoryToJsonString(chest.inventory), sign.lines)!!) {
+            player.sendMessage(ChatColor.BLUE.toString() + "Storefront created")
             return true
         }
-        player.sendMessage(ChatColor.RED.toString() + "Failed to update storefront")
+        player.sendMessage(ChatColor.RED.toString() + "Failed to create storefront")
         return false
     }
 
-    fun updateStorefront(player: Player, chest: Chest) : Boolean {
-        if (storage!!.updateStorefront(chest.location, inventoryToJsonString(chest.inventory))!!) {
+    fun updateStorefront(player: Player, chest: Chest, sign: Sign) : Boolean {
+        if (storage!!.updateStorefront(chest.location, inventoryToJsonString(chest.inventory), sign.lines)!!) {
             player.sendMessage(ChatColor.AQUA.toString() + "Storefront updated")
             return true
         }

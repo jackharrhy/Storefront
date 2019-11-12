@@ -30,7 +30,7 @@ class Storefront : JavaPlugin() {
     }
 
     override fun onDisable() {
-        logger.info(description.name + " has been enabled")
+        logger.info(description.name + " has been disabled")
     }
 
     fun removeStorefront(player: Player, chest: Chest) : Boolean {

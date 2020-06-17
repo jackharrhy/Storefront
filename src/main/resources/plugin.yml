@@ -1,7 +1,12 @@
 name: Storefront
 version: ${project.version}
 main: com.jackharrhy.storefront.Storefront
-api-version: 1.14
+api-version: 1.15
 prefix: storefront
 authors: [cheesemany]
 description: whatcha buying whatcha selling
+website: https://github.com/jackharrhy/Storefront/
+commands:
+  forceupdate:
+    description: Force the storefront to update all chests it keeps track of
+    usage: /forceupdate

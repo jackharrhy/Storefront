@@ -1,9 +1,6 @@
 package com.jackharrhy.storefront
 
 import com.google.gson.GsonBuilder
-import com.okkero.skedule.SynchronizationContext
-import com.okkero.skedule.schedule
-import org.bukkit.Bukkit
 import org.bukkit.block.Chest
 import org.bukkit.inventory.Inventory
 import org.bukkit.plugin.java.JavaPlugin
@@ -34,25 +31,25 @@ fun inventoryToJsonString(inventory: Inventory): String {
     return GsonBuilder().create().toJson(items)
 }
 
+
 class UpdateStorefronts(private val plugin: JavaPlugin, private val storage: Storage) : BukkitRunnable() {
-    private val scheduler = Bukkit.getScheduler()
     override fun run() {
-        scheduler.schedule(plugin, SynchronizationContext.ASYNC) {
-            repeating(10)
-            for (loc in storage.allLocations) {
-                switchContext(SynchronizationContext.SYNC)
+        val allLocations = storage.allLocations
+
+        for (loc in allLocations) {
+            plugin.server.scheduler.runTask(plugin) { _ ->
                 val blockStateFromDb = loc.world.getBlockAt(loc).state
 
                 if (blockStateFromDb is Chest) {
                     val blockStateFromDbInventory = blockStateFromDb.inventory
-                    switchContext(SynchronizationContext.ASYNC)
-                    storage.updateStorefront(loc, inventoryToJsonString(blockStateFromDbInventory))
+                    plugin.server.scheduler.runTaskAsynchronously(plugin) { _ ->
+                        storage.updateStorefront(loc, inventoryToJsonString(blockStateFromDbInventory))
+                    }
                 } else {
-                    switchContext(SynchronizationContext.ASYNC)
-                    storage.removeStorefront(loc)
-                    plugin.logger.info("Removed storefront since the block was no longer found")
+                    plugin.server.scheduler.runTaskAsynchronously(plugin) { _ ->
+                        plugin.logger.info("Removed storefront since the block was no longer found")
+                    }
                 }
-                yield()
             }
         }
     }

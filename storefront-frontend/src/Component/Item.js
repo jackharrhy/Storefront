@@ -3,9 +3,10 @@ import JSONPretty from 'react-json-pretty';
 import 'react-json-pretty/themes/monikai.css';
 
 import empty from '../empty.png';
+import missing from '../missing.png';
 
 const imageFallback = (event) => {
-  event.target.src = 'missing.png';
+  event.target.src = missing;
   event.target.className = 'empty'
 };
 

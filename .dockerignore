@@ -2,7 +2,6 @@ caddy/caddy
 test-server/
 
 storefront-frontend/dist
-storefront-frontend/.cache
 storefront-frontend/node_modules
 storefront-frontend/npm-debug.log*
 

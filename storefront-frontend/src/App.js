@@ -1,3 +1,5 @@
+import 'regenerator-runtime/runtime';
+
 import React, {useState, useEffect} from 'react';
 
 import Refesher from './Component/Refresher';
@@ -9,7 +11,7 @@ function App() {
 
   useEffect(() => {
     const getData = async () => {
-      const storefrontResponse = await fetch('./storefront/');
+      const storefrontResponse = await fetch('./sf/');
       const storefrontJson = await storefrontResponse.json();
       const players = {};
       storefrontJson.map(async (sf) => {

@@ -1,0 +1,8 @@
+version: '3'
+
+services:
+  storefront-frontend:
+    image: jackharrhy/storefront-frontend
+    build: ./.
+    ports:
+      - "8080:80"

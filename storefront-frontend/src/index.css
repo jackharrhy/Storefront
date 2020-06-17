@@ -1,6 +1,6 @@
 @font-face {
   font-family: "Minecraft Regular";
-  src: url("font/mc-Regular.eot?") format("eot"), url("font/mc-Regular.woff") format("woff"), url("font/mc-Regular.ttf") format("truetype"), url("font/mc-Regular.svg#mc-Regular") format("svg");
+  src: url("assets/font/mc-Regular.eot?") format("eot"), url("assets/font/mc-Regular.woff") format("woff"), url("assets/font/mc-Regular.ttf") format("truetype"), url("assets/font/mc-Regular.svg#mc-Regular") format("svg");
 }
 
 body {
@@ -8,13 +8,37 @@ body {
   font-family: "Minecraft Regular";
   font-weight: normal;
   font-style: normal;
-  background-image: url("stone-backdrop.png");
+  background-image: url("assets/stone-backdrop.png");
+}
+
+img {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
 }
 
 #app-root {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
+}
+
+@keyframes spin {
+  from {
+    transform:rotate(0deg);
+  }
+  to {
+    transform:rotate(360deg);
+  }
+}
+#loading-pickaxe {
+  margin-top: 3rem;
+  height: 10rem;
+  width: 10rem;
+  animation-name: spin;
+  animation-duration: 700ms;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
 }
 
 .empty {
@@ -69,7 +93,7 @@ header {
   width: 10rem;
   height: 5.4rem;
   align-self: center;
-  background-image: url("sign.png");
+  background-image: url("assets/sign.png");
 }
 .sign p {
   margin: 0.5rem;
@@ -101,13 +125,13 @@ header {
   align-self: center;
   height: 90%;
   width: 90%;
-  image-rendering: pixelated;
-  image-rendering: -moz-crisp-edges;
-  image-rendering: crisp-edges;
 }
 .item-meta {
+  margin-top: 3rem;
+  height: 20rem;
+  width: 20rem;
+  overflow: auto;
   position: absolute;
-  bottom: 0;
 }
 
 #material-tester {

@@ -4,6 +4,12 @@ http://localhost:2015 {
     reverse_proxy sys.the.home:2015
   }
 
+  route /storefront/images/* {
+    uri strip_prefix /storefront/images
+    root * ./images
+    file_server browse
+  }
+
   redir /storefront /storefront/
   route /storefront* {
     reverse_proxy 127.0.0.1:1234

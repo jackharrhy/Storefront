@@ -5,7 +5,8 @@
     "minecraft-items": "^0.4.3",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "react-json-pretty": "^2.2.0"
+    "react-json-pretty": "^2.2.0",
+    "react-sweet-state": "^2.3.0"
   },
   "scripts": {
     "start": "parcel serve --public-url /storefront/ src/index.html",

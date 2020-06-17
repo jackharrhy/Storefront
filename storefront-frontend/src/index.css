@@ -102,6 +102,8 @@ header {
   height: 90%;
   width: 90%;
   image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
 }
 .item-meta {
   position: absolute;

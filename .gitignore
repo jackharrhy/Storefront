@@ -1,4 +1,9 @@
+caddy/caddy
+test-server/
+
+target/
 storefront.iml
 .idea/
-target/
-test-server/
+.classpath
+.project
+.settings/

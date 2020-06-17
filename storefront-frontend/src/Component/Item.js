@@ -13,32 +13,34 @@ export default ({item}) => {
   const [showMeta, setShowMeta] = useState(false);
 
   if (item === null) {
-    return <div className="item">
-      <img title={"Empty"} alt={"Empty"} src={empty} />
-    </div>;
-  } else {
-    const alt = `${item.name} (${item.amount})`;
     return (
-      <>
-        <div
-          className="item"
-          onClick={() => setShowMeta(!showMeta)}
-        >
-          <img
-            title={alt}
-            alt={alt}
-            src={`./images/${item.image}.png`}
-            onError={imageFallback}
-          />
-        </div>
-        {
-          showMeta ? (
-            <div className="item-meta">
-              <JSONPretty id="json-pretty" data={item}></JSONPretty>
-            </div>
-          ) : null
-        }
-      </>
+      <div className="item">
+        <img title={"Empty"} alt={"Empty"} src={empty} />
+      </div>
     );
   }
+
+  const alt = `${item.name} (${item.amount})`;
+
+  return (
+    <>
+      <div
+        className="item"
+        onClick={() => setShowMeta(!showMeta)}
+      >
+        <img
+          title={alt}
+          alt={alt}
+          src={`./images/${item.image}.png`}
+          onError={imageFallback}
+        />
+      </div>
+      { showMeta && (
+          <div className="item-meta">
+            <JSONPretty id="json-pretty" data={item}></JSONPretty>
+          </div>
+        )
+      }
+    </>
+  );
 };

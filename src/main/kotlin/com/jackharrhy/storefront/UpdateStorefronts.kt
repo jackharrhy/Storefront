@@ -47,6 +47,7 @@ class UpdateStorefronts(private val plugin: JavaPlugin, private val storage: Sto
                     }
                 } else {
                     plugin.server.scheduler.runTaskAsynchronously(plugin) { _ ->
+                        storage.removeStorefront(loc)
                         plugin.logger.info("Removed storefront since the block was no longer found")
                     }
                 }

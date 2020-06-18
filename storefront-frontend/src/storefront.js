@@ -8,7 +8,10 @@ const Store = createStore({
 	actions: {
 		loadData: () => async ({ setState, getState }) => {
 			if (getState().loading === true) return;
-			setState({ loading: true });
+			setState({
+				loading: true,
+				currentItem: null,
+			});
 
 			const storefrontResponse = await fetch('./sf/');
 			const storefrontJson = await storefrontResponse.json();
@@ -33,8 +36,11 @@ const Store = createStore({
 				players,
 			});
 		},
-		setCurrentItem: (item) => ({ setState, getState }) => {
-			console.log(item);
+		setCurrentItem: (item) => ({ setState }) => {
+			setState({ currentItem: item });
+		},
+		clearCurrentItem: () => ({ setState }) => {
+			setState({ currentItem: null,});
 		},
 	},
 	name: 'storefront',

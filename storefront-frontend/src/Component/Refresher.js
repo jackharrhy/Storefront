@@ -1,14 +1,11 @@
 import React from 'react'
 
-export default ({ onClick }) => {
-	return null;
-	// TODO refresh button
+export default ({ loadData }) => {
 	return (
-		<div
-			id="refresh"
-			onClick={onClick}
-		>
-			<p>Refresh</p>
+		<div id="refresh">
+			<button onClick={loadData}>
+				Refresh
+			</button>
 		</div>
 	)
 }

@@ -1,144 +1,152 @@
 @font-face {
-  font-family: "Minecraft Regular";
-  src: url("assets/font/mc-Regular.eot?") format("eot"), url("assets/font/mc-Regular.woff") format("woff"), url("assets/font/mc-Regular.ttf") format("truetype"), url("assets/font/mc-Regular.svg#mc-Regular") format("svg");
+	font-family: "Minecraft Regular";
+	src: url("assets/font/mc-Regular.eot?") format("eot"), url("assets/font/mc-Regular.woff") format("woff"), url("assets/font/mc-Regular.ttf") format("truetype"), url("assets/font/mc-Regular.svg#mc-Regular") format("svg");
 }
 
 body {
-  margin: 0;
-  font-family: "Minecraft Regular";
-  font-weight: normal;
-  font-style: normal;
-  background-image: url("assets/stone-backdrop.png");
+	margin: 0;
+	font-family: "Minecraft Regular";
+	font-weight: normal;
+	font-style: normal;
+	background-image: url("assets/stone-backdrop.png");
 }
 
 img {
-  image-rendering: pixelated;
-  image-rendering: -moz-crisp-edges;
-  image-rendering: crisp-edges;
+	image-rendering: pixelated;
+	image-rendering: -moz-crisp-edges;
+	image-rendering: crisp-edges;
 }
 
 button {
-  border: 0.1rem solid #555;
-  border-top: 0.1rem solid #FFF;
-  border-left: 0.1rem solid #FFF;
-  border-radius: 0.2rem;
-  background-color: #D9D9D9;
+	border: 0.1rem solid #555;
+	border-top: 0.1rem solid #FFF;
+	border-left: 0.1rem solid #FFF;
+	border-radius: 0.2rem;
+	background-color: #D9D9D9;
 }
 button:hover {
 	background-color: #A9A9A9;
-  border: 0.1rem solid #FFF;
-  border-top: 0.1rem solid #555;
-  border-left: 0.1rem solid #555;
+	border: 0.1rem solid #FFF;
+	border-top: 0.1rem solid #555;
+	border-left: 0.1rem solid #555;
 }
 
 #app-root {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
 }
 
 @keyframes spin {
-  from {
-    transform:rotate(0deg);
-  }
-  to {
-    transform:rotate(360deg);
-  }
+	from {
+		transform:rotate(0deg);
+	}
+	to {
+		transform:rotate(360deg);
+	}
 }
 #loading-pickaxe {
-  margin-top: 3rem;
-  height: 10rem;
-  width: 10rem;
-  animation-name: spin;
-  animation-duration: 700ms;
-  animation-iteration-count: infinite;
-  animation-timing-function: linear;
+	margin-top: 3rem;
+	height: 10rem;
+	width: 10rem;
+	animation-name: spin;
+	animation-duration: 700ms;
+	animation-iteration-count: infinite;
+	animation-timing-function: linear;
 }
 
 .empty {
-  opacity: 0.6;
+	opacity: 0.6;
 }
 
 header {
-  width: 100%;
-  color: white;
-  text-align: center;
+	width: 100%;
+	color: white;
+	text-align: center;
 }
 
 #refresh {
-  width: 100%;
-  text-align: center;
+	width: 100%;
+	text-align: center;
 }
 
 .user {
-  display: flex;
-  flex-wrap: wrap;
-  flex-direction: column;
-  padding: 0.5rem;
-  margin: 0.5rem;
+	display: flex;
+	flex-wrap: wrap;
+	flex-direction: column;
+	padding: 0.5rem;
+	margin: 0.5rem;
 }
 .user-name {
-  text-align: center;
+	text-align: center;
 }
 .user-name p {
-  font-size: 2rem;
-  margin: 0 0 1rem 0;
-  color: white;
+	font-size: 2rem;
+	margin: 0 0 1rem 0;
+	color: white;
 }
 
 .storefront-container {
-  height: 60vh;
-  overflow: auto;
-  background-color: rgba(100,100,100,0.15);
+	height: 60vh;
+	overflow: auto;
+	background-color: rgba(100,100,100,0.15);
 }
 .storefront {
-  display: flex;
-  flex-wrap: wrap;
-  margin: 1.25rem 0.75rem;
-  width: 35rem;
-  justify-content: center;
-  align-content: center;
+	display: flex;
+	flex-wrap: wrap;
+	margin: 1.25rem 0.75rem;
+	width: 35rem;
+	justify-content: center;
+	align-content: center;
 }
 
 .sign {
-  margin-right: 1rem;
-  text-align: center;
-  background-color: #B38C51;
-  width: 10rem;
-  height: 5.4rem;
-  align-self: center;
-  background-image: url("assets/sign.png");
+	margin-right: 1rem;
+	text-align: center;
+	background-color: #B38C51;
+	width: 10rem;
+	height: 5.4rem;
+	align-self: center;
+	background-image: url("assets/sign.png");
 }
 .sign p {
-  margin: 0.5rem;
+	margin: 0.5rem;
 }
 
 .items {
-  display: flex;
-  flex-wrap: wrap;
-  width: 22.5rem;
-  border: 0.1rem solid #555;
-  border-top: 0.1rem solid #FFF;
-  border-left: 0.1rem solid #FFF;
-  border-radius: 0.2rem;
-  background-color: #C6C6C6;
-  justify-content: center;
-  padding: 0.5rem 0.2rem;
+	display: flex;
+	flex-wrap: wrap;
+	width: 22.5rem;
+	border: 0.1rem solid #555;
+	border-top: 0.1rem solid #FFF;
+	border-left: 0.1rem solid #FFF;
+	border-radius: 0.2rem;
+	background-color: #C6C6C6;
+	justify-content: center;
+	padding: 0.5rem 0.2rem;
 }
 .item {
-  display: flex;
-  height: 2.25em;
-  width: 2.25em;
-  border: 0.1em solid #555;
-  border-bottom: 0.1em solid #EEE;
-  border-right: 0.1em solid #EEE;
-  background-color: #9B9B9B;
-  justify-content: center;
+	position: relative;
+	display: flex;
+	height: 2.25em;
+	width: 2.25em;
+	border: 0.1em solid #555;
+	border-bottom: 0.1em solid #EEE;
+	border-right: 0.1em solid #EEE;
+	background-color: #9B9B9B;
+	justify-content: center;
 }
 .item img {
-  align-self: center;
-  height: 90%;
-  width: 90%;
+	align-self: center;
+	height: 90%;
+	width: 90%;
+}
+.count {
+	position: absolute;
+	color: white;
+	right: 0;
+	top: 0.2rem;
+	text-shadow: 2px 2px 0 #3F3F3F
 }
 
 #item-viewer {
@@ -147,8 +155,8 @@ header {
 	width: 100%;
 	height: 20%;
 	min-height: 12rem;
-  border: 0.1rem solid #555;
-  border-top: 0.1rem solid #FFF;
+	border: 0.1rem solid #555;
+	border-top: 0.1rem solid #FFF;
 	background-color: #C6C6C6;
 	resize: vertical;
 }
@@ -179,19 +187,19 @@ header {
 }
 
 #material-tester {
-  display: flex;
-  flex-wrap: wrap;
+	display: flex;
+	flex-wrap: wrap;
 }
 #material-tester p {
-  text-align: center;
+	text-align: center;
 }
 #material-tester > div {
-  width: 10%;
-  display: flex;
-  flex-direction: column;
+	width: 10%;
+	display: flex;
+	flex-direction: column;
 }
 #material-tester .item {
-  align-self: center;
+	align-self: center;
 }
 
 .close {
@@ -202,13 +210,13 @@ header {
 }
 
 @media only screen and (max-width: 700px) {
-  .sign {
-    margin: 0 0 1rem 0;
-  }
-  .storefront {
-    width: auto;
-  }
-  .items {
-    width: auto;
-  }
+	.sign {
+		margin: 0 0 1rem 0;
+	}
+	.storefront {
+		width: auto;
+	}
+	.items {
+		width: auto;
+	}
 }

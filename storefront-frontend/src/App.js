@@ -1,6 +1,8 @@
 import 'regenerator-runtime/runtime';
 
 import React, { useEffect } from 'react';
+import { useLocation } from "react-router-dom";
+import classNames from "classnames";
 
 import { useStorefront } from './storefront.js';
 import Refesher from './Component/Refresher';
@@ -9,32 +11,47 @@ import ItemViewer from './Component/ItemViewer';
 
 import ironPickaxe from './assets/iron_pickaxe.png';
 
+function useQuery() {
+  return new URLSearchParams(useLocation().search);
+}
+
 function App() {
 	const [state, actions] = useStorefront();
 
+	const query = useQuery();
+
+	const simpleUI = query.get('simpleUI') === 'true';
+	const username = query.get('username');
+
 	useEffect(() => {
-		actions.loadData();
+		actions.loadData({username});
 	}, []);
 
 	return (
 		<div id="app-root">
-			<header>
-				<h1>Storefront</h1>
-			</header>
-
+			{!simpleUI && (
+				<header>
+					<h1>Storefront</h1>
+				</header>
+			)}
 			{state.loading ? (
 				<img id="loading-pickaxe" src={ironPickaxe} />
 			) : (
 				<>
-					<Refesher
-						loadData={() => actions.loadData()}
-					/>
+					{!simpleUI && (
+						<Refesher
+							loadData={() => actions.loadData()}
+						/>
+					)}
 					{Object.entries(state.players).map(([userUUID, usersStorefronts]) => (
 						<div className="user"key={userUUID}>
 							<div className="user-name">
 								<p title={userUUID}>{usersStorefronts[0].owner.name}</p>
 							</div>
-							<div className="storefront-container">
+							<div className={classNames(
+								"storefront-container",
+								{ "storefront-container-full": username !== null }
+							)}>
 								<Storefront
 									usersStorefronts={usersStorefronts}
 									setCurrentItem={actions.setCurrentItem}
@@ -43,7 +60,7 @@ function App() {
 						</div>
 					))}
 				</>
-      )}
+			)}
 			{state.currentItem && (
 				<ItemViewer
 					currentItem={state.currentItem}

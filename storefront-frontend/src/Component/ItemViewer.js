@@ -11,7 +11,7 @@ export default ({ currentItem, clearCurrentItem }) => {
 			<div>
 				<Item
 					item={currentItem}
-					setCurrentItem={() => { }}
+					setCurrentItem={() => {}}
 				/>
 				<div className="json">
 					<JSONPretty data={currentItem}></JSONPretty>

@@ -6,7 +6,7 @@ const Store = createStore({
 		currentItem: null,
 	},
 	actions: {
-		loadData: () => async ({ setState, getState }) => {
+		loadData: ({username} = {}) => async ({ setState, getState }) => {
 			if (getState().loading === true) return;
 			setState({
 				loading: true,
@@ -25,9 +25,13 @@ const Store = createStore({
 				});
 
 				if (players[sf.owner.uuid]) {
-					players[sf.owner.uuid].push(sf)
+					if (username === null || sf.owner.name === username) {
+						players[sf.owner.uuid].push(sf)
+					}
 				} else {
-					players[sf.owner.uuid] = [sf];
+					if (username === null || sf.owner.name === username) {
+						players[sf.owner.uuid] = [sf];
+					}
 				}
 			})
 

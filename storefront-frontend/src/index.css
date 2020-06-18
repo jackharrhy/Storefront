@@ -91,6 +91,9 @@ header {
 	overflow: auto;
 	background-color: rgba(100,100,100,0.15);
 }
+.storefront-container-full {
+	overflow: visible;
+}
 .storefront {
 	display: flex;
 	flex-wrap: wrap;

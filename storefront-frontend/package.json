@@ -2,10 +2,12 @@
   "name": "storefront-frontend",
   "version": "0.2.0",
   "dependencies": {
+    "classnames": "^2.2.6",
     "minecraft-items": "^0.4.3",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-json-pretty": "^2.2.0",
+    "react-router-dom": "^5.2.0",
     "react-sweet-state": "^2.3.0"
   },
   "scripts": {

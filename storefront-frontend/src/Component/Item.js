@@ -34,7 +34,7 @@ export default ({ item, setCurrentItem }) => {
 					setImageError(true);
 				}}
 			/>
-			<p class="count">{item.amount > 1 ? item.amount : null}</p>
+			<p className="count">{item.amount > 1 ? item.amount : null}</p>
 		</div>
 	);
 };

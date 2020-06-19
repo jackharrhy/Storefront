@@ -6,26 +6,46 @@ on:
       - master
 
 jobs:
-  build-storefront-frontend:
+  buildx-storefront-frontend:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
-    - name: Publish to Dockerhub Registry
-      uses: elgohr/Publish-Docker-Github-Action@2.17
-      with:
-        name: jackharrhy/storefront-frontend
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-        dockerfile: storefront-frontend/Dockerfile
+      - name: Run Buildx
+        run: |
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            -t jackharrhy/storefront-frontend \
+            ./storefront-frontend/
 
-  build-storefront-discord:
+      - name: Login to DockerHub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Run Buildx
+        run: |
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            -t jackharrhy/storefront-frontend \
+            ./storefront-frontend/ \
+            --push
+
+  buildx-storefront-discord:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
-    - name: Publish to Dockerhub Registry
-      uses: elgohr/Publish-Docker-Github-Action@2.17
-      with:
-        name: jackharrhy/storefront-discord
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-        dockerfile: storefront-discord/Dockerfile
+      - name: Run Buildx
+        run: |
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            -t jackharrhy/storefront-discord \
+            .
+
+      - name: Login to DockerHub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Run Buildx
+        run: |
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            -t jackharrhy/storefront-discord \
+            ./storefront-discord/ \
+            --push

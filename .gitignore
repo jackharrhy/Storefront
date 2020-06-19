@@ -7,6 +7,12 @@ storefront-frontend/.cache
 storefront-frontend/node_modules
 storefront-frontend/npm-debug.log*
 
+storefront-discord/.env
+storefront-discord/dist
+storefront-discord/.cache
+storefront-discord/node_modules
+storefront-discord/npm-debug.log*
+
 target/
 storefront.iml
 .idea/

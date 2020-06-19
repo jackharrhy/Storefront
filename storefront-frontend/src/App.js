@@ -20,7 +20,8 @@ function App() {
 
 	const query = useQuery();
 
-	const simpleUI = query.get('simpleUI') === 'true';
+	const simpleUI = query.get('simpleUI') !== null;
+	const timestamp = query.get('timestamp') !== null ? new Date().toLocaleString() : null;
 	const username = query.get('username');
 
 	useEffect(() => {
@@ -48,6 +49,9 @@ function App() {
 							<div className="user-name">
 								<p title={userUUID}>{usersStorefronts[0].owner.name}</p>
 							</div>
+							{timestamp && (
+								<p className={"timestamp"}>{timestamp}</p>
+							)}
 							<div className={classNames(
 								"storefront-container",
 								{ "storefront-container-full": username !== null }

@@ -92,6 +92,7 @@ header {
 	background-color: rgba(100,100,100,0.15);
 }
 .storefront-container-full {
+	height: auto;
 	overflow: visible;
 }
 .storefront {
@@ -101,6 +102,12 @@ header {
 	width: 35rem;
 	justify-content: center;
 	align-content: center;
+}
+
+.timestamp {
+	margin: -0.2rem 0 1rem 0;
+	color: white;
+	text-align: center;
 }
 
 .sign {
@@ -212,7 +219,7 @@ header {
 	right: 0.4rem;
 }
 
-@media only screen and (max-width: 700px) {
+@media only screen and (max-width: 600px) {
 	.sign {
 		margin: 0 0 1rem 0;
 	}

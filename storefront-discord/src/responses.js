@@ -8,15 +8,15 @@ module.exports = async () => ({
 	'ping': async (msg) => {
 		msg.channel.send('pong!');
 	},
-	'show': async(msg, command) => {
-		const queryPiece = querystring.stringify({username: command.trim(), simpleUI: '', timestamp: ''});
+	'show': async (msg, command) => {
+		const queryPiece = querystring.stringify({ username: command.trim(), simpleUI: '', timestamp: '' });
 
 		const screenshot = await renderPage(`${baseUri}/?${queryPiece}`);
 
 		if (screenshot === null) {
 			msg.reply('Unknown user!');
 		} else {
-			msg.reply('', {files: [screenshot]});
+			msg.reply('', { files: [screenshot] });
 		}
 	},
 });

@@ -9,13 +9,12 @@ RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key
 
 WORKDIR /usr/src/app
 
-COPY package*.json ./
+COPY package.json .
+COPY package-lock.json .
 RUN npm install
 
 COPY . .
 COPY .env.dist .env
-
-RUN mkdir -p data/ && touch data/chess.db.json
 
 RUN groupadd -r pptruser && useradd -r -g pptruser -G audio,video pptruser \
     && mkdir -p /home/pptruser/Downloads \

@@ -9,7 +9,7 @@ jobs:
   buildx-storefront-frontend:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
+      - uses: actions/checkout@master
       - name: Run Buildx
         run: |
           docker buildx build \
@@ -31,7 +31,7 @@ jobs:
   buildx-storefront-discord:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
+      - uses: actions/checkout@master
       - name: Run Buildx
         run: |
           docker buildx build \

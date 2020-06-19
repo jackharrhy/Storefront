@@ -13,6 +13,8 @@ const Store = createStore({
 				currentItem: null,
 			});
 
+			const filterOnUsername = username === null || username === undefined;
+
 			const storefrontResponse = await fetch('./sf/');
 			const storefrontJson = await storefrontResponse.json();
 			const players = {};
@@ -25,11 +27,11 @@ const Store = createStore({
 				});
 
 				if (players[sf.owner.uuid]) {
-					if (username === null || sf.owner.name === username) {
+					if (filterOnUsername || sf.owner.name === username) {
 						players[sf.owner.uuid].push(sf)
 					}
 				} else {
-					if (username === null || sf.owner.name === username) {
+					if (filterOnUsername || sf.owner.name === username) {
 						players[sf.owner.uuid] = [sf];
 					}
 				}

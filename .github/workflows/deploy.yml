@@ -16,7 +16,6 @@ jobs:
         name: jackharrhy/storefront-frontend
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
-        dockerfile: storefront-frontend/Dockerfile
         workdir: storefront-frontend
 
   build-storefront-discord:
@@ -29,5 +28,4 @@ jobs:
         name: jackharrhy/storefront-discord
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
-        dockerfile: storefront-discord/Dockerfile
         workdir: storefront-discord

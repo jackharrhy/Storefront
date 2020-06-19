@@ -3,11 +3,10 @@ FROM node:12-alpine as build
 
 WORKDIR /usr/src/app
 
-COPY storefront-frontend/package.json /usr/src/app/package.json
+COPY package.json /usr/src/app/package.json
 RUN npm install --silent
 
-COPY ./storefront-frontend/ /usr/src/app/
-RUN ls
+COPY . /usr/src/app/
 RUN npm run build
 
 # prod

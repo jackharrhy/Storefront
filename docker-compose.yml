@@ -3,6 +3,12 @@ version: '3'
 services:
   storefront-frontend:
     image: jackharrhy/storefront-frontend
-    build: ./.
+    build: ./storefront-frontend/
     ports:
       - "8080:80"
+
+  storefront-discord:
+    image: jackharrhy/storefront-discord
+    build: ./storefront-discord/
+    env_file:
+      - ./storefront-discord/.env

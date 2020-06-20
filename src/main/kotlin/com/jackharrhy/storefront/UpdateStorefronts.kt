@@ -22,6 +22,7 @@ fun inventoryToJsonString(inventory: Inventory): String {
             val gson = GsonBuilder().create()
             newStack["meta"] = gson.toJsonTree(stack.itemMeta.serialize())
             newStack["isBlock"] = stack.type.isBlock
+            newStack["maxDurability"] = stack.type.maxDurability
 
             items.add(newStack)
         } else {

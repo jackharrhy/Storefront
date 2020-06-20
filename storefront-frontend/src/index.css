@@ -154,8 +154,8 @@ header {
 .count {
 	position: absolute;
 	color: white;
-	right: 0;
-	top: 0.2rem;
+	right: -0.05em;
+	top: 0.3em;
 	text-shadow: 2px 2px 0 #3F3F3F
 }
 

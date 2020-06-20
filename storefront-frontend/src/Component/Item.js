@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react'
 
+import Damage from './Damage';
+
 import empty from '../assets/empty.png';
 import missing from '../assets/missing.png';
 
@@ -36,6 +38,12 @@ export default ({ item, setCurrentItem }) => {
 				}}
 			/>
 			<p className="count">{item.amount > 1 ? item.amount : null}</p>
+			{item?.meta?.Damage && (
+				<Damage
+					maxDurability={item.maxDurability}
+					damage={item.meta.Damage}
+				/>
+			)}
 		</div>
 	);
 };

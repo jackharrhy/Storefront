@@ -18,7 +18,8 @@ export default ({ item, setCurrentItem }) => {
 		);
 	}
 
-	const alt = `${item.name} (${item.amount})`;
+	const amount = `(${item.amount})`;
+	const alt = `${item.name} ${item.amount > 1 ? amount : ''}`;
 
 	return (
 		<div

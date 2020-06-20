@@ -8,5 +8,8 @@ end_of_line = lf
 insert_final_newline = true
 trim_trailing_whitespace = true
 
+[*.{java,kt,kts,scala,rs,xml,kt.spec,kts.spec}]
+indent_size = 4
+
 [.yml]
 indent_style = space

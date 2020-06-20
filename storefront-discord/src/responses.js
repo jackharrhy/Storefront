@@ -10,8 +10,8 @@ module.exports = async () => ({
 	},
 	'show': async (msg, command) => {
 		const queryPiece = querystring.stringify({ username: command.trim(), simpleUI: '', timestamp: '' });
-
-		const screenshot = await renderPage(`${baseUri}/?${queryPiece}`);
+		const uri = `${baseUri}/?${queryPiece}`;
+		const screenshot = await renderPage(uri);
 
 		if (screenshot === null) {
 			msg.reply('Unknown user!');

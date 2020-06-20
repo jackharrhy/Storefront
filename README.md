@@ -2,7 +2,7 @@
 
 A Bukkit plugin (tested using Minecraft 1.15.2, running on PaperMC) to display the contents of chests on a server within a web interface.
 
-![Front page of Storefront, showing a few players current trades](https://i.imgur.com/XZSs6qa.png)
+![Front page of Storefront, showing a few players current trades](https://i.imgur.com/XkUNrlV.png)
 
 ---
 

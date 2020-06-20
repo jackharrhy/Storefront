@@ -40,7 +40,6 @@ class Storefront : JavaPlugin(), CommandExecutor {
 		logger.info(description.name + " has been disabled")
 	}
 
-
 	override fun onCommand(sender: CommandSender, cmd: Command, lbl: String, args: Array<out String>): Boolean {
 		val isOp = sender is Player && sender.isOp()
 		val isConsole = sender is ConsoleCommandSender

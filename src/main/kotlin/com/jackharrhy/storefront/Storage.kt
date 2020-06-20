@@ -225,7 +225,7 @@ class Storage(private val logger: Logger, fileName: String) {
 	}
 
 
-	fun storefrontLocationFromId(storefrontId: Int): Location? {
+	fun storefrontLocation(storefrontId: Int): Location? {
 		val storefrontLocationSql = "SELECT location FROM chest WHERE id = ?"
 
 		val serializedLocation = jdbi.withHandle<String?, RuntimeException> { handle ->

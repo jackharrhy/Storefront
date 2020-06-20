@@ -1,8 +1,7 @@
 import React from 'react'
 import interpolate from 'color-interpolate';
 
-// TODO ingame one seems to clamp it at higher values during the transition
-const colormap = interpolate(['#ff0000', '#00ff00']);
+const colormap = interpolate(['#ff0000', '#ffa500', '#00ff00']);
 
 export default ({ maxDurability, damage }) => {
 	const damageNormalized = ((maxDurability - damage) / maxDurability) * 100;

@@ -41,7 +41,7 @@ function App() {
 				<>
 					{!simpleUI && (
 						<Refesher
-							loadData={() => actions.loadData()}
+							loadData={() => actions.loadData({username})}
 						/>
 					)}
 					{Object.entries(state.players).map(([userUUID, usersStorefronts]) => (

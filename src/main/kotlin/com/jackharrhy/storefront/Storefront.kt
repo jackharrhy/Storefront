@@ -17,6 +17,7 @@ import org.bukkit.command.ConsoleCommandSender
 class Storefront : JavaPlugin(), CommandExecutor {
 	var storage: Storage? = null
 	var pluginFolder = dataFolder.absolutePath
+	var app: WebServer? = null
 
 	override fun onEnable() {
 		logger.info(description.name + " has been enabled")
@@ -30,7 +31,7 @@ class Storefront : JavaPlugin(), CommandExecutor {
 		this.storage = Storage(logger, pluginFolder + File.separator + "storefront.db")
 
 		SignListener(this, storage!!)
-		WebServer(this, storage!!)
+		app = WebServer(this, storage!!)
 		UpdateStorefronts(this, storage!!).runTaskTimer(this, 2400L, 2400L)
 
 		getCommand("storefrontforceupdate")?.setExecutor(this)
@@ -38,6 +39,7 @@ class Storefront : JavaPlugin(), CommandExecutor {
 
 	override fun onDisable() {
 		logger.info(description.name + " has been disabled")
+		app!!.getWebServer().stop()
 	}
 
 	override fun onCommand(sender: CommandSender, cmd: Command, lbl: String, args: Array<out String>): Boolean {

@@ -15,7 +15,7 @@ const Store = createStore({
 
 			const filterOnUsername = username === null || username === undefined;
 
-			const storefrontResponse = await fetch('./sf/');
+			const storefrontResponse = await fetch('./api/storefronts/');
 			const storefrontJson = await storefrontResponse.json();
 			const players = {};
 			storefrontJson.map(async (sf) => {

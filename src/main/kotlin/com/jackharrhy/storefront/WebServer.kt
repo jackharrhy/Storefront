@@ -13,11 +13,12 @@ import java.util.concurrent.CompletableFuture
 
 class WebServer(plugin: Storefront, storage: Storage) {
 	private val storage : Storage = storage
+	private val app : Javalin
 
 	init {
 		val classLoader = Thread.currentThread().contextClassLoader
 		Thread.currentThread().contextClassLoader = Storefront::class.java.classLoader
-		val app = Javalin.create().start(7000)
+		app = Javalin.create().start(7000)
 		Thread.currentThread().contextClassLoader = classLoader
 
 		app.before { ctx ->
@@ -83,5 +84,9 @@ class WebServer(plugin: Storefront, storage: Storage) {
 	private fun getAllContents() : String {
 		val allContents = storage.allContents
 		return GsonBuilder().create().toJson(allContents)
+	}
+	
+	public fun getWebServer() : Javalin {
+		return app
 	}
 }

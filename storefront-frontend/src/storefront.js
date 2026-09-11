@@ -1,55 +1,79 @@
-import { createStore, createHook } from 'react-sweet-state';
+import { useCallback, useEffect, useRef, useState } from "react";
 
-const Store = createStore({
-	initialState: {
-		players: [],
-		currentItem: null,
-	},
-	actions: {
-		loadData: ({username} = {}) => async ({ setState, getState }) => {
-			if (getState().loading === true) return;
-			setState({
-				loading: true,
-				currentItem: null,
-			});
+export function groupStorefronts(storefronts, username) {
+  const players = {};
+  for (const storefront of storefronts) {
+    if (username != null && storefront.owner.name !== username) continue;
+    const contents = storefront.contents.map((item) =>
+      item === null
+        ? null
+        : {
+            ...item,
+            image: item.key.replace(/^minecraft:/, ""),
+          },
+    );
+    (players[storefront.owner.uuid] ??= []).push({ ...storefront, contents });
+  }
+  return players;
+}
 
-			const filterOnUsername = username === null || username === undefined;
+export function useStorefront(username) {
+  const [state, setState] = useState({
+    players: {},
+    loading: true,
+    error: null,
+    currentItem: null,
+  });
+  const request = useRef(null);
 
-			const storefrontResponse = await fetch('./api/storefronts/');
-			const storefrontJson = await storefrontResponse.json();
-			const players = {};
-			storefrontJson.map(async (sf) => {
-				sf.id = btoa(Math.random()).substring(0, 12);
-				sf.contents.filter((item) => {
-					if (item !== null) {
-						item.image = item.key.slice(10, item.key.length);
-					}
-				});
+  const loadData = useCallback(async () => {
+    request.current?.abort();
+    const controller = new AbortController();
+    request.current = controller;
+    setState((previous) => ({
+      ...previous,
+      loading: true,
+      error: null,
+      currentItem: null,
+    }));
+    try {
+      const response = await fetch(
+        `${import.meta.env.BASE_URL}api/storefronts/`,
+        { signal: controller.signal },
+      );
+      if (!response.ok)
+        throw new Error(`Unable to load storefronts (${response.status}).`);
+      const storefronts = await response.json();
+      if (controller.signal.aborted) return;
+      setState({
+        players: groupStorefronts(storefronts, username),
+        loading: false,
+        error: null,
+        currentItem: null,
+      });
+    } catch (error) {
+      if (controller.signal.aborted) return;
+      setState((previous) => ({
+        ...previous,
+        loading: false,
+        error: error.message,
+      }));
+    }
+  }, [username]);
 
-				if (players[sf.owner.uuid]) {
-					if (filterOnUsername || sf.owner.name === username) {
-						players[sf.owner.uuid].push(sf)
-					}
-				} else {
-					if (filterOnUsername || sf.owner.name === username) {
-						players[sf.owner.uuid] = [sf];
-					}
-				}
-			})
+  useEffect(() => {
+    loadData();
+    return () => request.current?.abort();
+  }, [loadData]);
 
-			setState({
-				loading: false,
-				players,
-			});
-		},
-		setCurrentItem: (item) => ({ setState }) => {
-			setState({ currentItem: item });
-		},
-		clearCurrentItem: () => ({ setState }) => {
-			setState({ currentItem: null,});
-		},
-	},
-	name: 'storefront',
-});
-
-export const useStorefront = createHook(Store);
+  return [
+    state,
+    {
+      loadData,
+      setCurrentItem: (item) =>
+        setState((previous) => ({ ...previous, currentItem: item })),
+      clearCurrentItem: () =>
+        setState((previous) => ({ ...previous, currentItem: null })),
+    },
+  ];
+}

@@ -1,0 +1,76 @@
+name: storefront-dev
+
+services:
+  paper:
+    build:
+      context: .
+      dockerfile: dev/paper/Dockerfile
+    environment:
+      EULA: "TRUE"
+      TYPE: PAPER
+      VERSION: "26.2"
+      PAPER_BUILD: "123"
+      SKIP_DOWNLOAD_DEFAULTS: "TRUE"
+      MEMORY: 2G
+      ONLINE_MODE: "FALSE"
+      ENFORCE_SECURE_PROFILE: "FALSE"
+      MODE: creative
+      DIFFICULTY: peaceful
+      LEVEL_TYPE: minecraft:flat
+      GENERATOR_SETTINGS: '{"layers":[{"block":"minecraft:bedrock","height":1},{"block":"minecraft:dirt","height":2},{"block":"minecraft:grass_block","height":1}],"biome":"minecraft:plains"}'
+      GENERATE_STRUCTURES: "FALSE"
+      SPAWN_PROTECTION: "0"
+      VIEW_DISTANCE: "4"
+      SIMULATION_DISTANCE: "4"
+      ENABLE_RCON: "TRUE"
+      RCON_PASSWORD: storefront-local-only
+      PLUGINS: |-
+        https://cdn.modrinth.com/data/P1OZGk5p/versions/ZH8459B6/ViaVersion-5.11.0.jar
+        https://cdn.modrinth.com/data/NpvuJQoq/versions/hYhg2QBT/ViaBackwards-5.11.0.jar
+    ports:
+      - "127.0.0.1:${MC_PORT:-25566}:25565"
+      - "127.0.0.1:${API_PORT:-7000}:7000"
+    volumes:
+      - paper-data:/data
+    healthcheck:
+      test: [CMD-SHELL, "mc-health && curl -fsS http://127.0.0.1:7000/storefronts/ > /dev/null"]
+      interval: 10s
+      timeout: 5s
+      start_period: 120s
+      retries: 12
+    stop_grace_period: 60s
+
+  storefront-frontend:
+    build: ./storefront-frontend/
+    environment:
+      API_PROXY_TARGET: http://paper:7000
+    depends_on:
+      paper:
+        condition: service_healthy
+        restart: true
+    ports:
+      - "127.0.0.1:${WEB_PORT:-8080}:80"
+
+  bot:
+    profiles: [test]
+    build: ./dev/bot
+    environment:
+      MC_HOST: paper
+      MC_VERSION: "26.1"
+      API_URL: http://paper:7000
+      RCON_PASSWORD: storefront-local-only
+    depends_on:
+      paper:
+        condition: service_healthy
+
+  storefront-discord:
+    profiles: [discord]
+    build: ./storefront-discord/
+    env_file:
+      - ./storefront-discord/.env
+    depends_on:
+      storefront-frontend:
+        condition: service_started
+
+volumes:
+  paper-data:

@@ -1,0 +1,13 @@
+{
+  "name": "storefront-minecraft-smoke",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node smoke.js"
+  },
+  "dependencies": {
+    "mineflayer": "4.39.0",
+    "rcon-client": "4.2.5",
+    "vec3": "^0.2.0"
+  }
+}

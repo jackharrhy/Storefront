@@ -1,6 +1,8 @@
-require('dotenv').config();
+require("dotenv").config();
 
 module.exports = {
-	commandPrefix: process.env.STOREFRONT_COMMAND_PREFIX,
-	discordToken: process.env.STOREFRONT_DISCORD_TOKEN,
+  commandPrefix: process.env.STOREFRONT_COMMAND_PREFIX || "sf!",
+  discordToken: process.env.STOREFRONT_DISCORD_TOKEN,
+  storefrontUrl:
+    process.env.STOREFRONT_URL || "http://localhost:8080/storefront/",
 };

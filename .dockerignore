@@ -13,3 +13,7 @@ storefront.iml
 .classpath
 .project
 .settings/
+
+.git
+**/node_modules
+**/.env

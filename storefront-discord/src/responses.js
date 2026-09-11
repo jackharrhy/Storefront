@@ -1,22 +1,20 @@
-const querystring = require('querystring');
+const renderPage = require("./utils/render-page");
+const { storefrontUrl } = require("./config");
 
-const renderPage = require('./utils/render-page');
-
-const baseUri = 'https://cheesetown.jackharrhy.com/storefront';
-
-module.exports = async () => ({
-	'ping': async (msg) => {
-		msg.channel.send('pong!');
-	},
-	'show': async (msg, command) => {
-		const queryPiece = querystring.stringify({ username: command.trim(), simpleUI: '', timestamp: '' });
-		const uri = `${baseUri}/?${queryPiece}`;
-		const screenshot = await renderPage(uri);
-
-		if (screenshot === null) {
-			msg.reply('Unknown user!');
-		} else {
-			msg.reply('', { files: [screenshot] });
-		}
-	},
-});
+module.exports = {
+  ping: async (message) => message.channel.send("pong!"),
+  show: async (message, username) => {
+    if (!username) return message.reply("Usage: show <Minecraft username>");
+    const url = new URL(storefrontUrl);
+    url.search = new URLSearchParams({
+      username,
+      simpleUI: "",
+      timestamp: "",
+    }).toString();
+    const screenshot = await renderPage(url.toString());
+    if (screenshot === null) return message.reply("Unknown user!");
+    return message.reply({
+      files: [{ attachment: Buffer.from(screenshot), name: "storefront.png" }],
+    });
+  },
+};

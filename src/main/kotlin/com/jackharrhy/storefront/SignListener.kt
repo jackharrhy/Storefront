@@ -1,84 +1,68 @@
 package com.jackharrhy.storefront
 
-import org.bukkit.block.*
-import org.bukkit.block.data.Directional
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
+import org.bukkit.block.Block
+import org.bukkit.block.Chest
+import org.bukkit.block.Sign
 import org.bukkit.block.data.type.WallSign
+import org.bukkit.block.sign.Side
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.SignChangeEvent
 import org.bukkit.event.player.PlayerInteractEvent
+import org.bukkit.inventory.EquipmentSlot
 
 class SignListener(private val plugin: Storefront, private val storage: Storage) : Listener {
-	init {
-		plugin.server.pluginManager.registerEvents(this, plugin)
-	}
+    init {
+        plugin.server.pluginManager.registerEvents(this, plugin)
+    }
 
-	private fun isWallSign(sign: Sign): Boolean {
-		val blockData = sign.blockData
-		return blockData is WallSign
-	}
+    private fun getChestFromSign(sign: Sign): Chest? {
+        val wallSign = sign.blockData as? WallSign ?: return null
+        return sign.block.getRelative(wallSign.facing.oppositeFace).state as? Chest
+    }
 
-	private fun getBlockBehindWallSign(sign: Sign): Block {
-		val signInverseFace = (sign.blockData as Directional).facing.oppositeFace
-		return sign.block.getRelative(signInverseFace)
-	}
+    private fun getStorefrontSign(block: Block): Sign? {
+        val sign = block.state as? Sign ?: return null
+        val firstLine = PlainTextComponentSerializer.plainText().serialize(sign.getSide(Side.FRONT).line(0))
+        return sign.takeIf { firstLine.equals("[storefront]", ignoreCase = true) }
+    }
 
-	private fun getChestFromSign(sign: Sign): Chest? {
-		if (!isWallSign(sign)) return null
+    @EventHandler(ignoreCancelled = true)
+    fun onSignChange(event: SignChangeEvent) {
+        if (event.side != Side.FRONT) return
+        val firstLine = event.line(0)?.let { PlainTextComponentSerializer.plainText().serialize(it) }
+        if (!firstLine.equals("[storefront]", ignoreCase = true)) return
+        val sign = event.block.state as? Sign ?: return
+        val chest = getChestFromSign(sign) ?: return
+        val playerId = event.player.uniqueId.toString()
+        if (storage.ownerUUID(chest.location).orElse(playerId) != playerId) {
+            event.isCancelled = true
+            return
+        }
+        // SignChangeEvent fires before the edited text is applied to the block.
+        plugin.server.scheduler.runTask(plugin, Runnable {
+            if (event.isCancelled) return@Runnable
+            val currentSign = getStorefrontSign(event.block) ?: return@Runnable
+            val currentChest = getChestFromSign(currentSign) ?: return@Runnable
+            plugin.newStorefront(event.player, currentChest, currentSign)
+        })
+    }
 
-		val blockBehindSignState = getBlockBehindWallSign(sign).state
-		return if (blockBehindSignState is Chest) {
-			blockBehindSignState
-		} else null
-	}
+    @EventHandler(ignoreCancelled = true)
+    fun onSignBreak(event: BlockBreakEvent) {
+        val sign = getStorefrontSign(event.block) ?: return
+        val chest = getChestFromSign(sign) ?: return
+        event.isCancelled = !plugin.removeStorefront(event.player, chest)
+    }
 
-	private fun getStorefrontSign(block: Block): Sign? {
-		val blockState = block.state as? Sign ?: return null
-
-		return if (blockState.getLine(0).equals("[storefront]", ignoreCase = true)) {
-			blockState
-		} else null
-	}
-
-	@EventHandler
-	fun onSignChange(event: SignChangeEvent) {
-		if (event.getLine(0)!!.toLowerCase() == "[storefront]") {
-			val block = event.block
-			val sign = block.state as? Sign ?: return
-
-			val chest = getChestFromSign(sign)
-
-			if (chest != null) plugin.newStorefront(event.player, chest, sign)
-		}
-	}
-
-	@EventHandler
-	fun onSignBreak(event: BlockBreakEvent) {
-		val player = event.player
-
-		val sign = getStorefrontSign(event.block) ?: return
-
-		val chest = getChestFromSign(sign) ?: return
-
-		event.isCancelled = !this.plugin.removeStorefront(player, chest)
-	}
-
-	@EventHandler
-	fun onSignInteract(event: PlayerInteractEvent) {
-		val player = event.player
-
-		if (event.action != Action.RIGHT_CLICK_BLOCK) return
-
-		val sign = getStorefrontSign(event.clickedBlock!!) ?: return
-
-		val chest = getChestFromSign(sign) ?: return
-
-		if (storage.storefrontExists(chest.location)) {
-			this.plugin.updateStorefront(player, chest, sign)
-		} else {
-			this.plugin.newStorefront(player, chest, sign)
-		}
-	}
+    @EventHandler(ignoreCancelled = true)
+    fun onSignInteract(event: PlayerInteractEvent) {
+        if (event.action != Action.RIGHT_CLICK_BLOCK || event.hand != EquipmentSlot.HAND) return
+        val sign = getStorefrontSign(event.clickedBlock ?: return) ?: return
+        val chest = getChestFromSign(sign) ?: return
+        plugin.newStorefront(event.player, chest, sign)
+    }
 }

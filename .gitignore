@@ -19,3 +19,10 @@ storefront.iml
 .classpath
 .project
 .settings/
+
+storefront-frontend/.env.local
+storefront-frontend/coverage/
+
+dev/bot/node_modules/
+
+storefront-frontend/public/images/

@@ -1,18 +1,12 @@
-# build
-FROM node:12-alpine as build
-
-WORKDIR /usr/src/app
-
-COPY package.json /usr/src/app/package.json
-RUN npm install --silent
-
-COPY . /usr/src/app/
+FROM node:24-alpine AS build
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
+COPY . .
 RUN npm run build
 
-# prod
-FROM nginx:alpine
-
-COPY --from=build /usr/src/app/dist /usr/share/nginx/html
-
+FROM nginx:stable-alpine
+ENV API_PROXY_TARGET=http://host.docker.internal:7000
+COPY nginx.conf /etc/nginx/templates/default.conf.template
+COPY --from=build /app/dist /usr/share/nginx/html/storefront
 EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]

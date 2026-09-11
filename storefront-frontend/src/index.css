@@ -209,22 +209,6 @@ header {
 	background-color: none;
 }
 
-#material-tester {
-	display: flex;
-	flex-wrap: wrap;
-}
-#material-tester p {
-	text-align: center;
-}
-#material-tester > div {
-	width: 10%;
-	display: flex;
-	flex-direction: column;
-}
-#material-tester .item {
-	align-self: center;
-}
-
 .close {
 	padding: 0 0.3rem;
 	position: absolute;
@@ -242,4 +226,33 @@ header {
 	.items {
 		width: auto;
 	}
+}
+
+button.item {
+  box-sizing: content-box;
+  padding: 0;
+  border-radius: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
+button:focus-visible {
+  outline: 3px solid #ffdf6b;
+  outline-offset: 2px;
+}
+
+.status {
+  width: 100%;
+  text-align: center;
+  color: white;
+}
+
+#item-viewer .json pre {
+  padding: 0.75rem;
+  color: #f8f8f2;
+  font-family: monospace;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #loading-pickaxe { animation: none; }
 }

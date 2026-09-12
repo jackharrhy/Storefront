@@ -1,0 +1,14 @@
+{
+  "name": "storefront-browser-audit",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "catalog": "node catalog.js"
+  },
+  "dependencies": {
+    "puppeteer": "^25.10.0"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}

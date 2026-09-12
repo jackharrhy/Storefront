@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import type { Item as ItemData, Storefront as StorefrontData } from "../types.ts";
 import Item from "./Item.tsx";
 
@@ -9,7 +10,11 @@ export default function Storefront({
   setCurrentItem: (item: ItemData) => void;
 }) {
   return usersStorefronts.map((sf) => (
-    <div className="storefront" key={sf.id}>
+    <div
+      className="storefront"
+      key={sf.id}
+      style={{ "--inventory-rows": Math.ceil(sf.contents.length / 9) } as CSSProperties}
+    >
       <div className="sign">
         {sf.description.slice(1).map((line, i) => (
           <p key={i}>{line}</p>

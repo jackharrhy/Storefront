@@ -29,6 +29,7 @@ class Storefront : JavaPlugin() {
         val updater = UpdateStorefronts(this, storage)
         refresher = updater
         server.scheduler.runTaskTimer(this, Runnable { updater.request() }, 2400L, 2400L)
+        getCommand("storefrontcatalog")!!.setExecutor(this)
         getCommand("storefrontrefreshstatus")!!.setExecutor(this)
         getCommand("storefrontforceupdate")!!.setExecutor(this)
     }
@@ -41,6 +42,10 @@ class Storefront : JavaPlugin() {
 
     override fun onCommand(sender: CommandSender, cmd: Command, label: String, args: Array<out String>): Boolean {
         if (!sender.hasPermission("storefront.admin")) return true
+        if (cmd.name == "storefrontcatalog") {
+            fixtureCatalog(this, sender, args)
+            return true
+        }
         val updater = refresher ?: return true
         if (cmd.name == "storefrontrefreshstatus") {
             sender.sendMessage(com.google.gson.Gson().toJson(updater.status))

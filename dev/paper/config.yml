@@ -5,3 +5,6 @@ web:
 refresh:
   chests-per-tick: 8
   budget-ms: 2.0
+
+development:
+  fixtures: true

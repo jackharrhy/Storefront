@@ -60,16 +60,26 @@ header {
 }
 
 .user {
+  /* Reserve the column width before offscreen shops are laid out. */
+  width: 37.5rem;
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: calc(100% - 1rem);
   display: flex;
-  flex-wrap: wrap;
   flex-direction: column;
   padding: 0.5rem;
   margin: 0.5rem;
 }
+.user > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
 .user-name {
   text-align: center;
 }
 .user-name p {
+  overflow-wrap: anywhere;
   font-size: 2rem;
   margin: 0 0 1rem 0;
   color: white;
@@ -91,6 +101,8 @@ header {
   width: 35rem;
   justify-content: center;
   align-content: center;
+  content-visibility: auto;
+  contain-intrinsic-block-size: auto max(5.4rem, calc(var(--inventory-rows) * 2.433333rem + 1.2rem));
 }
 
 .timestamp {
@@ -113,9 +125,11 @@ header {
 }
 
 .items {
-  display: flex;
-  flex-wrap: wrap;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: repeat(9, minmax(0, 1fr));
   width: 22.5rem;
+  max-width: 100%;
   border: 0.1rem solid #555;
   border-top: 0.1rem solid #fff;
   border-left: 0.1rem solid #fff;
@@ -135,6 +149,13 @@ header {
   background-color: #9b9b9b;
   justify-content: center;
 }
+.items .item {
+  width: auto;
+  height: auto;
+  min-width: 0;
+  aspect-ratio: 1;
+}
+
 .item img {
   align-self: center;
   height: 90%;
@@ -214,9 +235,13 @@ header {
   }
   .storefront {
     width: auto;
+    flex-direction: column;
+    align-items: center;
+    contain-intrinsic-block-size: auto
+      calc(var(--inventory-rows) * min(2.433333rem, (100vw - 4.1rem) / 9) + 7.6rem);
   }
   .items {
-    width: auto;
+    width: 22.5rem;
   }
 }
 
@@ -253,4 +278,10 @@ button:focus-visible {
 button:disabled {
   opacity: 0.65;
   cursor: wait;
+}
+
+@media print {
+  .storefront {
+    content-visibility: visible;
+  }
 }

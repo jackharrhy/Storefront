@@ -129,3 +129,9 @@ STOREFRONTS=100 SETUP=false DIRTY=true RUN_LABEL=dirty docker compose --profile 
 ```
 
 The bot registers full chests by interacting with signs in a grid beginning at **1024, 65, 1024**, then runs ten refreshes alongside four HTTP readers. `DIRTY=true` runs three sweeps with an item-count change in every chest and restores the original counts afterward. Reports are saved to `dev/reports/`. The stress container writes as UID/GID 1000 by default; set `LOCAL_UID` and `LOCAL_GID` to match your user if needed. Fixture chunks stay loaded for measurement and are released afterward. Listings and fixture blocks persist for inspection; reuse the same count for `SETUP=false`. This exercises actual server inventory serialization and API reads, but does not simulate many concurrent players.
+
+## Every-item rendering fixture
+
+The diamond stress workload is complemented by a catalog generated from Paper's live item registry, including potion, enchantment, trim, dye, durability, and other representative metadata variants. Run `docker compose --profile catalog run --build --rm catalog` after rebuilding the stack, then visit `/storefront/?username=StorefrontItems`.
+
+See [catalog setup and browser audit](dev/browser/README.md) for the exact coverage boundaries, image audit, and viewport-loading checks. The fixture also exposes the difference between having an image for every base item and rendering every metadata-dependent appearance.

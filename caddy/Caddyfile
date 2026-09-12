@@ -1,16 +1,9 @@
 http://localhost:2015 {
-  redir /storefront /storefront/
-
-  handle_path /storefront/images/* {
-    root * ./images
-    file_server
-  }
-
-  handle_path /storefront/api/* {
+  handle_path /api/* {
     reverse_proxy 127.0.0.1:7000
   }
 
-  handle /storefront/* {
+  handle {
     reverse_proxy 127.0.0.1:5173
   }
 }

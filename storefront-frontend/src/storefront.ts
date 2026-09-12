@@ -32,7 +32,7 @@ function isStorefront(value: unknown): value is Storefront {
 export const storefrontQuery = queryOptions({
   queryKey: ["storefronts"],
   queryFn: async ({ signal }): Promise<Storefront[]> => {
-    const response = await fetch(`${import.meta.env.BASE_URL}api/storefronts/`, { signal });
+    const response = await fetch("/api/storefronts/", { signal });
     if (!response.ok) throw new Error(`Unable to load storefronts (${response.status}).`);
     const data: unknown = await response.json();
     if (!Array.isArray(data) || !data.every(isStorefront))

@@ -22,7 +22,7 @@ The catalog covers every enabled base item type at its maximum stack size, plus 
 
 This is not every possible component combination. Arbitrary text, player profiles, custom model data, maps, RGB colors, nested container contents, and component combinations make exhaustive enumeration impractical. The trim matrix uses one armor base; the remaining armor types are covered as base items, not crossed with every trim and dye.
 
-The complete manifest, including commands, slot IDs, and observed metadata, is generated at `dev/reports/catalog.json` and excluded from Git. Browse `/storefront/?username=StorefrontItems` for the full catalog.
+The complete manifest, including commands, slot IDs, and observed metadata, is generated at `dev/reports/catalog.json` and excluded from Git. Browse `/?username=StorefrontItems` for the full catalog.
 
 Run the browser audit:
 
@@ -33,7 +33,7 @@ npm --prefix dev/browser exec -- puppeteer browsers install chrome
 npm --prefix dev/browser run catalog
 ```
 
-Set `STOREFRONT_URL` for another frontend and `BROWSER_EXECUTABLE_PATH` to use an existing Chrome/Chromium installation. The default URL is `http://127.0.0.1:8080/storefront/`.
+Set `STOREFRONT_URL` for another frontend and `BROWSER_EXECUTABLE_PATH` to use an existing Chrome/Chromium installation. The default URL is `http://127.0.0.1:8080/`.
 
 The audit validates the PNG signature and HTTP status of every base icon, then scrolls every catalog chest in desktop, mobile (including the 600 px breakpoint), and nested-panel layouts. It checks decoded images/fallbacks, deferred initial image requests, item coverage, horizontal overflow, image-induced resizing, JavaScript errors, and cumulative layout shift (limit 0.1). It writes `dev/reports/catalog-coverage.json` and desktop/mobile screenshots. Missing icons fail the audit after writing the report.
 

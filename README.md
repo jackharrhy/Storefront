@@ -36,7 +36,7 @@ npm ci
 npm run dev
 ```
 
-Open `http://localhost:5173/storefront/`. Vite proxies `/storefront/api/` to the plugin at `http://127.0.0.1:7000`. Set `API_PROXY_TARGET` in `storefront-frontend/.env.local` to use another backend. API failures have a retry button, so the UI also starts without a running Minecraft server.
+Open `http://localhost:5173/`. Vite proxies `/api/` to the plugin at `http://127.0.0.1:7000`. Set `API_PROXY_TARGET` in `storefront-frontend/.env.local` to use another backend. API failures have a retry button, so the UI also starts without a running Minecraft server.
 
 Inventory icons are fetched automatically by `npm run dev`, `npm start`, and `npm run build`, including Docker builds. `npm run icons` fetches them explicitly. The downloader verifies a pinned archive checksum, converts the rendered icon names to lowercase, and caches 1,537 PNGs in `storefront-frontend/public/images/`. Generated graphics are excluded from Git. A missing icon in the cache causes a fresh download; `npm run icons -- --force` refreshes the entire set.
 
@@ -63,7 +63,7 @@ npm run build
 npm run preview
 ```
 
-`dist/` is a static site served under `/storefront/`. Production hosting must proxy `/storefront/api/` to the plugin, serve `/storefront/images/`, and fall back to `index.html` for application routes. `npm run preview` previews static output only; it does not configure the production API proxy.
+`dist/` is a static site served under `/`. Production hosting must strip `/api` when proxying to the plugin (`/api/storefronts/` → `http://127.0.0.1:7000/storefronts/`), serve `/images/`, and fall back to `index.html` for application routes. `npm run preview` previews static output only; it does not configure the production API proxy.
 
 ## Local Paper server and headless test
 
@@ -76,7 +76,7 @@ docker compose up --build -d --wait paper storefront-frontend
 No local JDK or Maven install is needed for this path. The first build downloads Java/Maven dependencies and Paper; later builds reuse the Maven cache.
 
 - Minecraft: `localhost:25566` (Java Edition 26.2; older clients can use the included ViaVersion/ViaBackwards bridge).
-- Web UI: http://localhost:8080/storefront/
+- Web UI: http://localhost:8080/
 - Plugin API: http://localhost:7000/storefronts/
 
 This is an isolated development world in the `storefront-dev_paper-data` Docker volume. Ports bind to localhost, the server uses offline authentication for test bots, and RCON is available only inside the Compose network. The Compose service sets `EULA=TRUE`, accepting the [Minecraft EULA](https://www.minecraft.net/eula). Do not reuse this offline configuration for a public server. Set `MC_PORT`, `WEB_PORT`, or `API_PORT` in your shell to change the host ports.
@@ -106,7 +106,7 @@ docker compose down
 
 `docker compose down -v` also deletes this stack's test world and database. The existing server on port 25565 is independent of this stack. To visit the demo chest with your own client, join `localhost:25566` and run `docker compose exec paper rcon-cli "tp YOUR_NAME 0.5 65 3.5"` from a terminal.
 
-The frontend's nginx proxy targets `paper:7000` in Compose. For standalone hosting, set the container's `API_PROXY_TARGET` to another backend URL (without a trailing slash). Textures may be included in `public/images/` before building or mounted at `/usr/share/nginx/html/storefront/images/`.
+The frontend's nginx proxy targets `paper:7000` in Compose. For standalone hosting, set the container's `API_PROXY_TARGET` to another backend URL (without a trailing slash). Textures may be included in `public/images/` before building or mounted at `/usr/share/nginx/html/images/`.
 
 The optional Discord screenshot bot uses Node 24, discord.js 14, and Puppeteer 25. Copy `storefront-discord/.env.dist` to `storefront-discord/.env`, set the token and storefront URL, and enable the **Message Content Intent** in the Discord developer portal. Start it with `docker compose --profile discord up --build`. The default prefix is `sf!`, with `ping` and `show <Minecraft username>` commands. For a local run, use `npm ci` and `npm start` in `storefront-discord/`, with `STOREFRONT_URL` pointing to your frontend. Puppeteer downloads its browser locally; the container uses system Chromium.
 
@@ -132,6 +132,6 @@ The bot registers full chests by interacting with signs in a grid beginning at *
 
 ## Every-item rendering fixture
 
-The diamond stress workload is complemented by a catalog generated from Paper's live item registry, including potion, enchantment, trim, dye, durability, and other representative metadata variants. Run `docker compose --profile catalog run --build --rm catalog` after rebuilding the stack, then visit `/storefront/?username=StorefrontItems`.
+The diamond stress workload is complemented by a catalog generated from Paper's live item registry, including potion, enchantment, trim, dye, durability, and other representative metadata variants. Run `docker compose --profile catalog run --build --rm catalog` after rebuilding the stack, then visit `/?username=StorefrontItems`.
 
 See [catalog setup and browser audit](dev/browser/README.md) for the exact coverage boundaries, image audit, and viewport-loading checks. The fixture also exposes the difference between having an image for every base item and rendering every metadata-dependent appearance.

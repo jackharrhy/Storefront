@@ -17,3 +17,8 @@ storefront.iml
 .git
 **/node_modules
 **/.env
+**/.env.*
+
+**/dist
+**/.cache
+dev/reports

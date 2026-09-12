@@ -41,7 +41,9 @@ services:
     stop_grace_period: 60s
 
   storefront-frontend:
-    build: ./storefront-frontend/
+    build:
+      context: .
+      dockerfile: storefront-frontend/Dockerfile
     environment:
       API_PROXY_TARGET: http://paper:7000
     depends_on:
@@ -101,9 +103,12 @@ services:
 
   storefront-discord:
     profiles: [discord]
-    build: ./storefront-discord/
+    build:
+      context: .
+      dockerfile: storefront-discord/Dockerfile
     env_file:
-      - ./storefront-discord/.env
+      - path: ./storefront-discord/.env
+        required: false
     depends_on:
       storefront-frontend:
         condition: service_started

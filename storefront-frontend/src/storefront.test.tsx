@@ -3,7 +3,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-libra
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import { afterEach, expect, it, vi } from "vitest";
 import { storefrontRoutes } from "./router.tsx";
-import type { Storefront } from "./types.ts";
+import type { Storefront } from "@storefront/shared";
 
 const fixtures: Storefront[] = [
   {

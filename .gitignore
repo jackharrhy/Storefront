@@ -30,3 +30,6 @@ storefront-frontend/public/images/
 dev/browser/node_modules/
 dev/reports/catalog.json
 dev/reports/catalog-*.png
+
+/node_modules/
+packages/*/dist/

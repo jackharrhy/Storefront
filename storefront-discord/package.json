@@ -1,19 +1,28 @@
 {
   "name": "storefront-discord",
   "version": "0.0.1",
+  "private": true,
   "description": "",
-  "main": "src/index.js",
-  "scripts": {
-    "start": "node src/index.js",
-    "check": "node --check src/index.js && node --check src/config.js && node --check src/responses.js && node --check src/utils/render-page.js"
-  },
   "author": "Jack Arthur Harrhy",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "node --watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test src/*.test.ts",
+    "lint": "oxlint --deny-warnings .",
+    "format": "oxfmt --write .",
+    "format:check": "oxfmt --check .",
+    "smoke": "node scripts/smoke.ts"
+  },
   "dependencies": {
+    "@storefront/shared": "*",
     "discord.js": "^14.27.0",
     "dotenv": "^17.4.2",
     "puppeteer": "^25.10.0"
   },
-  "private": true,
   "engines": {
     "node": ">=24"
   }

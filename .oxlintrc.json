@@ -1,10 +1,12 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": ["typescript", "react", "jsx-a11y", "vitest"],
-  "categories": { "correctness": "error" },
+  "categories": {
+    "correctness": "error"
+  },
   "rules": {
     "react/rules-of-hooks": "error",
     "react/exhaustive-deps": "error"
   },
-  "ignorePatterns": ["dist/**", "public/images/**"]
+  "ignorePatterns": ["**/dist/**", "**/public/images/**", "**/package-lock.json"]
 }

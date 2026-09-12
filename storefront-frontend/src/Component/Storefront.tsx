@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import type { Item as ItemData, Storefront as StorefrontData } from "../types.ts";
+import type { Item as ItemData, Storefront as StorefrontData } from "@storefront/shared";
 import Item from "./Item.tsx";
 
 export default function Storefront({

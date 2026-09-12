@@ -18,6 +18,7 @@ fun signDescription(sign: Sign): Array<String> = sign.getSide(Side.FRONT).lines(
 class Storefront : JavaPlugin() {
     private lateinit var storage: Storage
     private var app: WebServer? = null
+    private var refresher: UpdateStorefronts? = null
 
     override fun onEnable() {
         saveDefaultConfig()
@@ -25,19 +26,28 @@ class Storefront : JavaPlugin() {
         storage = Storage(logger, dataFolder.resolve("storefront.db").absolutePath)
         app = WebServer(this, storage)
         SignListener(this, storage)
-        UpdateStorefronts(this, storage).runTaskTimer(this, 2400L, 2400L)
+        val updater = UpdateStorefronts(this, storage)
+        refresher = updater
+        server.scheduler.runTaskTimer(this, Runnable { updater.request() }, 2400L, 2400L)
+        getCommand("storefrontrefreshstatus")!!.setExecutor(this)
         getCommand("storefrontforceupdate")!!.setExecutor(this)
     }
 
     override fun onDisable() {
+        refresher?.close()
         app?.stop()
         app = null
     }
 
     override fun onCommand(sender: CommandSender, cmd: Command, label: String, args: Array<out String>): Boolean {
         if (!sender.hasPermission("storefront.admin")) return true
-        UpdateStorefronts(this, storage).run()
-        sender.sendMessage(Component.text("Updated storefronts", NamedTextColor.GREEN))
+        val updater = refresher ?: return true
+        if (cmd.name == "storefrontrefreshstatus") {
+            sender.sendMessage(com.google.gson.Gson().toJson(updater.status))
+        } else {
+            val accepted = updater.request()
+            sender.sendMessage(Component.text(if (accepted) "Storefront refresh queued" else "Storefront refresh already running", NamedTextColor.GREEN))
+        }
         return true
     }
 

@@ -9,11 +9,11 @@ import org.bukkit.Location
 import org.bukkit.entity.Player
 import org.jdbi.v3.core.Jdbi
 import java.io.File
-import java.time.Instant
+import java.util.concurrent.atomic.AtomicLong
+import org.sqlite.SQLiteDataSource
 import java.util.*
 import java.util.logging.Level
 import java.util.logging.Logger
-import java.util.stream.Collectors
 
 fun serializeLocation(location: Location): String {
     return ("" + requireNotNull(location.world).name
@@ -53,11 +53,16 @@ fun flattenDescription(desc: Array<String>): String {
 
 fun <T : Any> Optional<T>.toNullable(): T? = this.orElse(null)
 
+data class RefreshTarget(val id: Int, val location: String, val contents: String, val modified: Long)
+data class RefreshChange(val target: RefreshTarget, val contents: String?)
+
 data class Owner(val uuid: String , val name: String)
 data class Content(val id: Int, val owner: JsonElement, val contents: JsonElement, val description: JsonElement)
 
 class Storage(private val logger: Logger, fileName: String) {
     private val jdbi: Jdbi
+    private val modifiedClock = AtomicLong(System.currentTimeMillis())
+    private fun nextModified(): Long = modifiedClock.updateAndGet { maxOf(it + 1, System.currentTimeMillis()) }
 
     val allContents: List<Content>
         get() = jdbi.withHandle<List<Content>, RuntimeException> { handle ->
@@ -74,15 +79,28 @@ class Storage(private val logger: Logger, fileName: String) {
         }
 
 
-    val allLocations: List<Location>
-        get() = jdbi.withHandle<List<Location>, RuntimeException> { handle ->
-            handle.createQuery("SELECT location FROM chest")
-                .mapTo(String::class.java)
-                .list()
-                .stream()
-                .map { string -> deserializeLocation(string) }
-                .collect(Collectors.toList())
+    fun refreshTargets(): List<RefreshTarget> = jdbi.withHandle<List<RefreshTarget>, RuntimeException> { handle ->
+        handle.createQuery("SELECT id, location, contents, modified FROM chest ORDER BY id")
+            .map { rs, _ -> RefreshTarget(rs.getInt("id"), rs.getString("location"), rs.getString("contents"), rs.getLong("modified")) }
+            .list()
+    }
+
+    fun applyRefresh(changes: List<RefreshChange>): Int {
+        if (changes.isEmpty()) return 0
+        return jdbi.inTransaction<Int, RuntimeException> { handle ->
+            var affected = 0
+            for ((target, contents) in changes) {
+                val statement = if (contents == null) {
+                    handle.createUpdate("DELETE FROM chest WHERE id = :id AND modified = :previous")
+                } else {
+                    handle.createUpdate("UPDATE chest SET contents = :contents, modified = :modified WHERE id = :id AND modified = :previous")
+                        .bind("contents", contents).bind("modified", nextModified())
+                }
+                affected += statement.bind("id", target.id).bind("previous", target.modified).execute()
+            }
+            affected
         }
+    }
 
     init {
         val dbFile = File(fileName)
@@ -97,7 +115,11 @@ class Storage(private val logger: Logger, fileName: String) {
         }
 
         val connectionString = "jdbc:sqlite:$fileName"
-        this.jdbi = Jdbi.create(connectionString)
+        val dataSource = SQLiteDataSource().apply {
+            url = connectionString
+            config.setBusyTimeout(5000)
+        }
+        this.jdbi = Jdbi.create(dataSource)
         this.initialize()
     }
 
@@ -111,7 +133,13 @@ class Storage(private val logger: Logger, fileName: String) {
             + "description TEXT NOT NULL "
             + ")")
 
-        jdbi.useHandle<RuntimeException> { handle -> handle.execute(createChestTableSql) }
+        jdbi.useHandle<RuntimeException> { handle ->
+            handle.execute("PRAGMA journal_mode=WAL")
+            handle.execute(createChestTableSql)
+            handle.execute("CREATE INDEX IF NOT EXISTS chest_location ON chest(location)")
+            val latest = handle.createQuery("SELECT COALESCE(MAX(modified), 0) FROM chest").mapTo(Long::class.java).one()
+            modifiedClock.updateAndGet { maxOf(it, latest) }
+        }
     }
 
     fun newStorefront(owner: Player, location: Location, contents: String, description: Array<String>): Boolean? {
@@ -129,7 +157,7 @@ class Storage(private val logger: Logger, fileName: String) {
                 .bind("location", locationSerialized)
                 .bind("owner", ownerSerialized)
                 .bind("contents", contents)
-                .bind("modified", Instant.now().epochSecond)
+                .bind("modified", nextModified())
                 .bind("description", flatDescription)
                 .execute()
         }
@@ -154,7 +182,7 @@ class Storage(private val logger: Logger, fileName: String) {
             handle.createUpdate(updateStorefrontSql)
                 .bind("location", locationSerialized)
                 .bind("contents", contents)
-                .bind("modified", Instant.now().epochSecond)
+                .bind("modified", nextModified())
                 .execute()
         }
 
@@ -180,7 +208,7 @@ class Storage(private val logger: Logger, fileName: String) {
             handle.createUpdate(updateStorefrontSql)
                 .bind("location", locationSerialized)
                 .bind("contents", contents)
-                .bind("modified", Instant.now().epochSecond)
+                .bind("modified", nextModified())
                 .bind("description", flatDescription)
                 .execute()
         }
@@ -226,18 +254,14 @@ class Storage(private val logger: Logger, fileName: String) {
     }
 
 
-    fun storefrontLocation(storefrontId: Int): Location? {
+    fun storefrontLocationString(storefrontId: Int): String? {
         val storefrontLocationSql = "SELECT location FROM chest WHERE id = ?"
 
         val serializedLocation = jdbi.withHandle<String?, RuntimeException> { handle ->
             handle.select(storefrontLocationSql, storefrontId).mapTo(String::class.java).findOne().toNullable()
         }
 
-        if (serializedLocation is String) {
-            return deserializeLocation(serializedLocation)
-        }
-
-        return null
+        return serializedLocation
     }
 
     fun storefrontContentsById(id: Int) : Content? {

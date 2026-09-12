@@ -1,6 +1,6 @@
 # Storefront
 
-A Paper plugin that displays Minecraft chest inventories in a React web interface. Put a wall sign on a chest with `[storefront]` on its first line; the remaining lines describe the shop. Right-click the sign to refresh it, or break it to remove the listing. Only the owner can update or remove a listing. Inventories refresh every two minutes; operators can use `/storefrontforceupdate` (alias `/forceupdate`).
+A Paper plugin that displays Minecraft chest inventories in a React web interface. Put a wall sign on a chest with `[storefront]` on its first line; the remaining lines describe the shop. Right-click the sign to refresh it, or break it to remove the listing. Only the owner can update or remove a listing. Loaded inventories refresh every two minutes; operators can use `/storefrontforceupdate` (alias `/forceupdate`).
 
 This branch targets **Java 26 and Paper 26.2**. It replaces the original Java 8 / Paper 1.15.2 build, and uses Kotlin 2.4, Javalin 7, React 19, and Vite 8. It is not compatible with the old Minecraft server runtime. The SQLite table and saved inventory JSON remain compatible; the API now includes each storefront's database ID.
 
@@ -14,7 +14,7 @@ Install JDK 26 and run:
 
 On Windows, use `mvnw.cmd verify`. The wrapper downloads Maven 3.9.16; no global Maven install is needed. Copy `target/storefront-2.0-SNAPSHOT.jar` into a Paper 26.2 server's `plugins/` directory and start the server with Java 26. The plugin bundles its runtime dependencies.
 
-The plugin stores listings in `plugins/Storefront/storefront.db`. Keep a copy of the existing database and world before upgrading an old server. The Maven tests cover SQLite compatibility and HTTP routing. The Compose smoke test below exercises actual chest/sign interactions on a separate Paper server.
+The plugin stores listings in `plugins/Storefront/storefront.db`. Keep a copy of the existing database and world before upgrading an old server. The Maven tests cover SQLite compatibility, HTTP routing, refresh budgets, and protection against stale refresh writes. The Compose smoke test below exercises actual chest/sign interactions on a separate Paper server.
 
 `plugins/Storefront/config.yml` configures the API, which listens on `127.0.0.1:7000` by default:
 
@@ -24,7 +24,7 @@ web:
   port: 7000
 ```
 
-Routes are `GET /storefronts/`, `GET /storefronts/{id}`, and `GET /storefronts/{id}/item/{position}/map` (zero-based inventory position). Missing entries return 404; malformed IDs and positions return 400.
+Routes are `GET /storefronts/`, `GET /storefronts/{id}`, and `GET /storefronts/{id}/item/{position}/map` (zero-based inventory position). Missing entries return 404; malformed IDs and positions return 400. Live map details also return 404 while the chest chunk is unloaded; HTTP requests never force it to load.
 
 ## Develop the frontend
 
@@ -50,10 +50,14 @@ docker compose up --build -d --no-deps storefront-frontend
 
 For the existing Caddy image route, run `npm run icons -- --output ../caddy/images` from the frontend directory, then run Caddy from `caddy/`. The built-in Minecraft fonts and UI textures are bundled separately.
 
+The frontend uses strict TypeScript, React Router data mode, and TanStack Query. A route loader fills the shared query cache before rendering; these are browser HTTP requests to the plugin, with static hosting and no SSR process. Initial loading is a quiet text status. Refresh keeps existing shops visible, including on errors, and username navigation reuses cached data. Oxlint and Oxfmt provide linting and formatting.
+
 Query options are preserved: `?username=Alice` filters shops; `&simpleUI` hides the header and refresh control; `&timestamp` adds the capture time. Item details include metadata and decode legacy NBT on demand in the browser.
 
 ```sh
 npm run lint
+npm run format:check # npm run format to apply formatting
+npm run typecheck
 npm test
 npm run build
 npm run preview
@@ -91,6 +95,7 @@ Useful commands:
 # Logs and an operator command, without attaching a graphical client
 docker compose logs -f paper
 docker compose exec paper rcon-cli storefrontforceupdate
+docker compose exec paper rcon-cli storefrontrefreshstatus
 
 # Rebuild and restart the plugin after editing Kotlin
 docker compose up --build -d --wait paper
@@ -106,3 +111,21 @@ The frontend's nginx proxy targets `paper:7000` in Compose. For standalone hosti
 The optional Discord screenshot bot uses Node 24, discord.js 14, and Puppeteer 25. Copy `storefront-discord/.env.dist` to `storefront-discord/.env`, set the token and storefront URL, and enable the **Message Content Intent** in the Discord developer portal. Start it with `docker compose --profile discord up --build`. The default prefix is `sf!`, with `ping` and `show <Minecraft username>` commands. For a local run, use `npm ci` and `npm start` in `storefront-discord/`, with `STOREFRONT_URL` pointing to your frontend. Puppeteer downloads its browser locally; the container uses system Chromium.
 
 CI builds and tests the plugin and frontend on pushes and pull requests. The Docker publishing workflow runs only on `master` and uses the existing Docker Hub secrets.
+
+## Refresh scheduling and stress testing
+
+Bulk refresh reads database targets on a dedicated worker, captures live inventories on the server thread, and writes changed snapshots in transactions on the worker. It captures at most eight chests or approximately 2 ms of work per tick by default; one inventory capture cannot be interrupted and may exceed that budget. Unloaded chunks retain their last snapshot until a later refresh with the chunk loaded. Overlapping refresh requests are coalesced; `/storefrontforceupdate` now queues work, and `/storefrontrefreshstatus` reports completion and timing as JSON.
+
+Configure `refresh.chests-per-tick` and `refresh.budget-ms` in the plugin config. SQLite uses WAL and a location index. Conditional writes ensure an older bulk capture cannot overwrite a newer player update or delete a replacement listing. Individual sign interactions still perform their small database operations on the server thread. See [the performance report](dev/reports/README.md) for measured results and limitations.
+
+Run a larger Mineflayer workload in the Compose development world:
+
+```sh
+STOREFRONTS=100 RUN_LABEL=local docker compose --profile stress run --build --rm stress
+# Repeat against existing fixtures without rebuilding the world
+STOREFRONTS=100 SETUP=false RUN_LABEL=repeat docker compose --profile stress run --rm stress
+# Modify every chest between three refreshes and assert the writes reached the API
+STOREFRONTS=100 SETUP=false DIRTY=true RUN_LABEL=dirty docker compose --profile stress run --rm stress
+```
+
+The bot registers full chests by interacting with signs in a grid beginning at **1024, 65, 1024**, then runs ten refreshes alongside four HTTP readers. `DIRTY=true` runs three sweeps with an item-count change in every chest and restores the original counts afterward. Reports are saved to `dev/reports/`. The stress container writes as UID/GID 1000 by default; set `LOCAL_UID` and `LOCAL_GID` to match your user if needed. Fixture chunks stay loaded for measurement and are released afterward. Listings and fixture blocks persist for inspection; reuse the same count for `SETUP=false`. This exercises actual server inventory serialization and API reads, but does not simulate many concurrent players.

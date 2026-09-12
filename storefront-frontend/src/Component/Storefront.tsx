@@ -1,6 +1,13 @@
-import Item from "./Item";
+import type { Item as ItemData, Storefront as StorefrontData } from "../types.ts";
+import Item from "./Item.tsx";
 
-export default function Storefront({ usersStorefronts, setCurrentItem }) {
+export default function Storefront({
+  usersStorefronts,
+  setCurrentItem,
+}: {
+  usersStorefronts: StorefrontData[];
+  setCurrentItem: (item: ItemData) => void;
+}) {
   return usersStorefronts.map((sf) => (
     <div className="storefront" key={sf.id}>
       <div className="sign">

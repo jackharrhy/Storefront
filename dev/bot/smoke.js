@@ -25,6 +25,21 @@ async function listings() {
   return response.json();
 }
 
+async function refresh() {
+  const deadline = Date.now() + 60_000;
+  let reply;
+  do {
+    reply = await rcon.send('storefrontforceupdate');
+    let status;
+    do {
+      await bot.waitForTicks(2);
+      status = JSON.parse((await rcon.send('storefrontrefreshstatus')).replace(/\u001b\[[0-9;]*m|§./g, '').trim());
+      assert(!status.error, status.error);
+      assert(Date.now() < deadline, 'Refresh did not complete');
+    } while (status.running);
+  } while (!reply.includes('queued'));
+}
+
 async function waitForListing(predicate) {
   for (let attempt = 0; attempt < 50; attempt++) {
     const shops = (await listings()).filter((shop) => shop.owner.name === username);
@@ -50,7 +65,10 @@ try {
     `gamemode creative ${username}`,
     `tp ${username} 0.5 65 3.5`,
   ];
-  for (const command of commands) console.log(await rcon.send(command));
+  for (const command of commands) {
+    if (command === 'storefrontforceupdate') await refresh();
+    else console.log(await rcon.send(command));
+  }
   await bot.waitForChunksToLoad();
   await bot.waitForTicks(10);
   const signPosition = new Vec3(0, 65, 1);
@@ -65,7 +83,7 @@ try {
   console.log(`Created storefront ${created.id} by right-clicking the sign`);
 
   await rcon.send('item replace block 0 65 0 container.0 with minecraft:diamond 7');
-  await rcon.send('storefrontforceupdate');
+  await refresh();
   const [updated] = await waitForListing((shops) => shops[0]?.contents[0]?.amount === 7);
   assert.equal(updated.id, created.id);
   console.log('Inventory refresh preserved the storefront ID and updated the item count');

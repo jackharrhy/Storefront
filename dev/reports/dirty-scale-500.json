@@ -1,0 +1,62 @@
+{
+  "label": "dirty-scale",
+  "count": 500,
+  "dirty": true,
+  "rounds": 3,
+  "itemsPerChest": 27,
+  "readers": 4,
+  "timestamp": "2026-09-12T00:54:35.482Z",
+  "before": "Server tick times (avg/min/max) from last 5s, 10s, 1m:\n◴ 4.1/3.3/5.7, 4.3/0.2/37.4, 0.9/0.1/37.4",
+  "after": "Server tick times (avg/min/max) from last 5s, 10s, 1m:\n◴ 4.6/1.4/17.4, 5.2/1.1/26.5, 3.4/0.1/37.4",
+  "refreshCommandMs": {
+    "p50": 0.6259520000021439,
+    "p95": 0.66629599999942,
+    "max": 0.66629599999942,
+    "samples": [
+      0.66629599999942,
+      0.6259520000021439,
+      0.4286240000001271
+    ]
+  },
+  "apiMs": {
+    "requests": 588,
+    "p50": 86.26709499999924,
+    "p95": 111.78621700000076,
+    "max": 171.06031399999847
+  },
+  "errors": [],
+  "replies": [
+    "Storefront refresh queued",
+    "Storefront refresh queued",
+    "Storefront refresh queued"
+  ],
+  "refreshes": [
+    {
+      "running": false,
+      "completed": 7,
+      "targets": 501,
+      "changed": 500,
+      "skippedUnloaded": 1,
+      "maxCaptureMs": 18.070683,
+      "elapsedMs": 7906.702556
+    },
+    {
+      "running": false,
+      "completed": 8,
+      "targets": 501,
+      "changed": 500,
+      "skippedUnloaded": 1,
+      "maxCaptureMs": 3.792245,
+      "elapsedMs": 7680.344765
+    },
+    {
+      "running": false,
+      "completed": 9,
+      "targets": 501,
+      "changed": 500,
+      "skippedUnloaded": 1,
+      "maxCaptureMs": 3.648653,
+      "elapsedMs": 7661.931753
+    }
+  ]
+}

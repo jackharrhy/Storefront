@@ -27,6 +27,7 @@ class StorageTest {
         }
         val storefront = storage.allContents.single()
         assertEquals(42, storefront.id)
+        assertEquals("world:1.0:64.0:2.0", storage.storefrontLocationString(42))
         assertEquals("Alice", storefront.owner.asJsonObject["name"].asString)
         assertTrue(storefront.contents.asJsonArray[0].isJsonNull)
         assertEquals(2, storefront.contents.asJsonArray[1].asJsonObject["amount"].asInt)

@@ -3,24 +3,24 @@
   "version": "0.3.0",
   "private": true,
   "type": "module",
-  "engines": {
-    "node": ">=24"
-  },
   "scripts": {
     "dev": "vite",
     "start": "vite",
-    "build": "vite build",
+    "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "lint": "eslint .",
+    "lint": "oxlint --deny-warnings .",
     "test": "vitest run",
-    "icons": "node scripts/fetch-icons.mjs",
+    "icons": "node scripts/fetch-icons.ts",
     "predev": "npm run icons",
     "prestart": "npm run icons",
-    "prebuild": "npm run icons"
+    "prebuild": "npm run icons",
+    "format": "oxfmt --write .",
+    "format:check": "oxfmt --check .",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.102.8",
     "classnames": "^2.5.1",
-    "color-interpolate": "^2.0.0",
     "nbtify": "^2.2.0",
     "normalize.css": "^8.0.1",
     "react": "^19.3.0",
@@ -28,16 +28,20 @@
     "react-router-dom": "^7.18.3"
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.0",
     "@testing-library/react": "^16.3.3",
+    "@types/node": "^24.13.4",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.1",
-    "eslint": "^10.10.0",
-    "eslint-plugin-react-hooks": "^7.1.1",
-    "eslint-plugin-react-refresh": "^0.5.6",
     "fflate": "^0.8.3",
-    "globals": "^17.0.0",
     "jsdom": "^30.0.1",
+    "oxfmt": "^0.67.0",
+    "oxlint": "^1.82.0",
+    "typescript": "^7.0.2",
     "vite": "^8.3.0",
     "vitest": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=24"
   }
 }

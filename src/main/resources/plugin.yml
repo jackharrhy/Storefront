@@ -10,8 +10,11 @@ commands:
   storefrontforceupdate:
     aliases: [forceupdate]
     permission: storefront.admin
-    description: Force the storefront to update all chests it keeps track of
+    description: Queue a refresh of tracked chests in loaded chunks
     usage: /forceupdate
+  storefrontrefreshstatus:
+    description: Show the most recent inventory refresh measurements
+    permission: storefront.admin
 permissions:
   storefront.admin:
     default: op

@@ -63,6 +63,26 @@ services:
       paper:
         condition: service_healthy
 
+  stress:
+    profiles: [stress]
+    build: ./dev/bot
+    command: [node, stress.js]
+    user: "${LOCAL_UID:-1000}:${LOCAL_GID:-1000}"
+    environment:
+      MC_HOST: paper
+      MC_VERSION: "26.1"
+      API_URL: http://paper:7000
+      RCON_PASSWORD: storefront-local-only
+      STOREFRONTS: ${STOREFRONTS:-100}
+      RUN_LABEL: ${RUN_LABEL:-stress}
+      SETUP: ${SETUP:-true}
+      DIRTY: ${DIRTY:-false}
+    volumes:
+      - ./dev/reports:/reports
+    depends_on:
+      paper:
+        condition: service_healthy
+
   storefront-discord:
     profiles: [discord]
     build: ./storefront-discord/

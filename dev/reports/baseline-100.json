@@ -1,0 +1,45 @@
+{
+  "label": "baseline",
+  "count": 100,
+  "itemsPerChest": 27,
+  "readers": 4,
+  "timestamp": "2026-09-12T00:32:26.528Z",
+  "before": "Server tick times (avg/min/max) from last 5s, 10s, 1m:\n◴ 2.1/1.4/3.6, 3.3/1.2/168.6, 4.1/0.1/328.8",
+  "after": "Server tick times (avg/min/max) from last 5s, 10s, 1m:\n◴ 16.3/0.6/469.8, 20.0/0.6/524.2, 7.5/0.5/524.2",
+  "refreshCommandMs": {
+    "p50": 459.6494380000004,
+    "p95": 526.2346409999955,
+    "max": 526.2346409999955,
+    "samples": [
+      489.71302399999695,
+      496.9626849999986,
+      459.6494380000004,
+      475.530829000003,
+      428.2703030000048,
+      526.2346409999955,
+      448.6192849999934,
+      385.33259000000544,
+      420.2083480000001,
+      470.41587099999015
+    ]
+  },
+  "apiMs": {
+    "requests": 431,
+    "p50": 32.37355899999966,
+    "p95": 58.677232999994885,
+    "max": 344.3479619999998
+  },
+  "errors": [],
+  "replies": [
+    "Updated storefronts",
+    "Updated storefronts",
+    "Updated storefronts",
+    "Updated storefronts",
+    "Updated storefronts",
+    "Updated storefronts",
+    "Updated storefronts",
+    "Updated storefronts",
+    "Updated storefronts",
+    "Updated storefronts"
+  ]
+}

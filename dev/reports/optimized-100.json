@@ -1,0 +1,139 @@
+{
+  "label": "optimized",
+  "count": 100,
+  "dirty": false,
+  "rounds": 10,
+  "itemsPerChest": 27,
+  "readers": 4,
+  "timestamp": "2026-09-12T00:43:46.419Z",
+  "before": "Server tick times (avg/min/max) from last 5s, 10s, 1m:\n◴ 6.9/3.8/10.1, 14.6/0.6/446.1, 13.4/0.6/446.1",
+  "after": "Server tick times (avg/min/max) from last 5s, 10s, 1m:\n◴ 4.4/1.4/9.7, 4.4/1.4/9.7, 8.0/0.6/446.1",
+  "refreshCommandMs": {
+    "p50": 1.060432000002038,
+    "p95": 5.773245999998835,
+    "max": 5.773245999998835,
+    "samples": [
+      5.773245999998835,
+      1.573370000000068,
+      1.340833999998722,
+      0.8722920000000158,
+      1.2010320000008505,
+      1.060432000002038,
+      0.9916560000056052,
+      0.8881009999968228,
+      1.5358249999990221,
+      0.8618710000009742
+    ]
+  },
+  "apiMs": {
+    "requests": 1020,
+    "p50": 34.236691999998584,
+    "p95": 45.611659000001964,
+    "max": 86.39238599999953
+  },
+  "errors": [],
+  "replies": [
+    "Storefront refresh queued",
+    "Storefront refresh queued",
+    "Storefront refresh queued",
+    "Storefront refresh queued",
+    "Storefront refresh queued",
+    "Storefront refresh queued",
+    "Storefront refresh queued",
+    "Storefront refresh queued",
+    "Storefront refresh queued",
+    "Storefront refresh queued"
+  ],
+  "refreshes": [
+    {
+      "running": false,
+      "completed": 1,
+      "targets": 101,
+      "changed": 0,
+      "skippedUnloaded": 1,
+      "maxCaptureMs": 121.101814,
+      "elapsedMs": 4719.236699
+    },
+    {
+      "running": false,
+      "completed": 2,
+      "targets": 101,
+      "changed": 0,
+      "skippedUnloaded": 1,
+      "maxCaptureMs": 4.968021,
+      "elapsedMs": 2919.030649
+    },
+    {
+      "running": false,
+      "completed": 3,
+      "targets": 101,
+      "changed": 0,
+      "skippedUnloaded": 1,
+      "maxCaptureMs": 3.542962,
+      "elapsedMs": 2629.029764
+    },
+    {
+      "running": false,
+      "completed": 4,
+      "targets": 101,
+      "changed": 0,
+      "skippedUnloaded": 1,
+      "maxCaptureMs": 3.916886,
+      "elapsedMs": 2234.929452
+    },
+    {
+      "running": false,
+      "completed": 5,
+      "targets": 101,
+      "changed": 0,
+      "skippedUnloaded": 1,
+      "maxCaptureMs": 3.918783,
+      "elapsedMs": 2105.893786
+    },
+    {
+      "running": false,
+      "completed": 6,
+      "targets": 101,
+      "changed": 0,
+      "skippedUnloaded": 1,
+      "maxCaptureMs": 3.805031,
+      "elapsedMs": 1909.377108
+    },
+    {
+      "running": false,
+      "completed": 7,
+      "targets": 101,
+      "changed": 0,
+      "skippedUnloaded": 1,
+      "maxCaptureMs": 3.640576,
+      "elapsedMs": 2083.733469
+    },
+    {
+      "running": false,
+      "completed": 8,
+      "targets": 101,
+      "changed": 0,
+      "skippedUnloaded": 1,
+      "maxCaptureMs": 3.826691,
+      "elapsedMs": 2045.299471
+    },
+    {
+      "running": false,
+      "completed": 9,
+      "targets": 101,
+      "changed": 0,
+      "skippedUnloaded": 1,
+      "maxCaptureMs": 3.519668,
+      "elapsedMs": 1811.855014
+    },
+    {
+      "running": false,
+      "completed": 10,
+      "targets": 101,
+      "changed": 0,
+      "skippedUnloaded": 1,
+      "maxCaptureMs": 3.837298,
+      "elapsedMs": 1759.779497
+    }
+  ]
+}

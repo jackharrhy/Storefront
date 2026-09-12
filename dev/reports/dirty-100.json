@@ -1,0 +1,62 @@
+{
+  "label": "dirty",
+  "count": 100,
+  "dirty": true,
+  "rounds": 3,
+  "itemsPerChest": 27,
+  "readers": 4,
+  "timestamp": "2026-09-12T00:44:23.033Z",
+  "before": "Server tick times (avg/min/max) from last 5s, 10s, 1m:\n◴ 3.3/1.8/8.8, 3.6/0.2/43.5, 4.0/0.2/55.0",
+  "after": "Server tick times (avg/min/max) from last 5s, 10s, 1m:\n◴ 4.5/1.3/28.4, 5.2/1.3/29.0, 3.7/0.2/55.0",
+  "refreshCommandMs": {
+    "p50": 0.44544499999938125,
+    "p95": 0.5858100000004924,
+    "max": 0.5858100000004924,
+    "samples": [
+      0.44544499999938125,
+      0.5858100000004924,
+      0.4224020000001474
+    ]
+  },
+  "apiMs": {
+    "requests": 282,
+    "p50": 32.83178599999883,
+    "p95": 46.20074000000022,
+    "max": 65.36306200000035
+  },
+  "errors": [],
+  "replies": [
+    "Storefront refresh queued",
+    "Storefront refresh queued",
+    "Storefront refresh queued"
+  ],
+  "refreshes": [
+    {
+      "running": false,
+      "completed": 11,
+      "targets": 101,
+      "changed": 100,
+      "skippedUnloaded": 1,
+      "maxCaptureMs": 3.201314,
+      "elapsedMs": 2305.508318
+    },
+    {
+      "running": false,
+      "completed": 12,
+      "targets": 101,
+      "changed": 100,
+      "skippedUnloaded": 1,
+      "maxCaptureMs": 3.305962,
+      "elapsedMs": 1808.974875
+    },
+    {
+      "running": false,
+      "completed": 13,
+      "targets": 101,
+      "changed": 100,
+      "skippedUnloaded": 1,
+      "maxCaptureMs": 3.157176,
+      "elapsedMs": 1669.584846
+    }
+  ]
+}

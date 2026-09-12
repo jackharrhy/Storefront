@@ -1,3 +1,7 @@
 web:
   host: 127.0.0.1
   port: 7000
+
+refresh:
+  chests-per-tick: 8
+  budget-ms: 2.0

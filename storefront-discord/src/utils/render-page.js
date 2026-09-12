@@ -9,7 +9,7 @@ module.exports = async (url) => {
     const page = await browser.newPage();
     await page.goto(url, { waitUntil: "networkidle0" });
     await page.waitForSelector("#app-root");
-    await page.waitForSelector("#loading-pickaxe", { hidden: true });
+    await page.waitForSelector('[data-loading="true"]', { hidden: true });
     if (await page.$('[role="alert"]'))
       throw new Error("Storefront API request failed");
     if (!(await page.$(".user"))) return null;

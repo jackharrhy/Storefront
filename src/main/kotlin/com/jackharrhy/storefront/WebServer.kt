@@ -46,11 +46,16 @@ class WebServer(private val plugin: Storefront, private val storage: Storage) {
     }
 
     private fun mapContents(id: Int, position: Int): CompletableFuture<String> {
-        val location = storage.storefrontLocation(id) ?: throw NotFoundResponse("Storefront not found")
+        val serializedLocation = storage.storefrontLocationString(id) ?: throw NotFoundResponse("Storefront not found")
         val result = CompletableFuture<String>()
         plugin.server.scheduler.runTask(plugin, Runnable {
             try {
-                val chest = location.world?.getBlockAt(location)?.state as? Chest
+                val location = deserializeLocation(serializedLocation)
+                val world = location.world ?: throw NotFoundResponse("World not found")
+                if (!world.isChunkLoaded(location.blockX shr 4, location.blockZ shr 4)) {
+                    throw NotFoundResponse("Chest chunk is not loaded")
+                }
+                val chest = world.getBlockAt(location).state as? Chest
                     ?: throw NotFoundResponse("Chest not found")
                 if (position !in 0 until chest.inventory.size) throw BadRequestResponse("Invalid item position")
                 val meta = chest.inventory.getItem(position)?.itemMeta as? MapMeta

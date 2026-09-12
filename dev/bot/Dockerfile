@@ -2,5 +2,5 @@ FROM node:24-alpine
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
-COPY smoke.js ./
+COPY *.js ./
 CMD ["npm", "test"]

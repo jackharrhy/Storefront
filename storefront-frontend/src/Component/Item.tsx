@@ -1,4 +1,4 @@
-import type { Item as ItemData } from "../types.ts";
+import type { Item as ItemData } from "@storefront/shared";
 import { useState } from "react";
 
 import Damage from "./Damage.tsx";

@@ -19,6 +19,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
       - uses: docker/build-push-action@v7
         with:
-          context: ./${{ matrix.project }}
+          context: .
+          file: ${{ matrix.project }}/Dockerfile
           push: true
           tags: jackharrhy/${{ matrix.project }}:latest

@@ -1,3 +1,4 @@
+import { readStorefrontOptions } from "@storefront/shared";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams, useNavigation } from "react-router-dom";
@@ -6,19 +7,12 @@ import { groupStorefronts, storefrontQuery } from "./storefront.ts";
 import Storefront from "./Component/Storefront.tsx";
 import ItemViewer from "./Component/ItemViewer.tsx";
 import { LoadingPage } from "./route-status.tsx";
-import type { Item } from "./types.ts";
+import type { Item } from "@storefront/shared";
 
 export default function App() {
   const [search] = useSearchParams();
-  const username = search.get("username");
-  return (
-    <StorefrontPage
-      key={username}
-      username={username}
-      simpleUI={search.has("simpleUI")}
-      timestamp={search.has("timestamp")}
-    />
-  );
+  const options = readStorefrontOptions(search);
+  return <StorefrontPage key={options.username} {...options} />;
 }
 
 function StorefrontPage({

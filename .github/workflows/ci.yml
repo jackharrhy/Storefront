@@ -19,37 +19,19 @@ jobs:
         with:
           name: storefront-plugin
           path: target/storefront-2.0-SNAPSHOT.jar
-  frontend:
+  javascript:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: storefront-frontend
+    env:
+      PUPPETEER_SKIP_DOWNLOAD: 'true'
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
           node-version: '24'
           cache: npm
-          cache-dependency-path: storefront-frontend/package-lock.json
       - run: npm ci
       - run: npm run lint
       - run: npm run format:check
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
-  discord:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: storefront-discord
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '24'
-          cache: npm
-          cache-dependency-path: storefront-discord/package-lock.json
-      - run: npm ci
-        env:
-          PUPPETEER_SKIP_DOWNLOAD: 'true'
-      - run: npm run check

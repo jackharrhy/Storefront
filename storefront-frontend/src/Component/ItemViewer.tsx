@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Item from "./Item.tsx";
-import type { Item as ItemData } from "../types.ts";
+import type { Item as ItemData } from "@storefront/shared";
 
 export default function ItemViewer({
   currentItem: item,

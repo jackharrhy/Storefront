@@ -18,7 +18,15 @@ export default function Item({
   if (item === null) {
     return (
       <div className="item">
-        <img title={"Empty"} alt={"Empty"} src={empty} />
+        <img
+          title="Empty"
+          alt="Empty"
+          src={empty}
+          width={16}
+          height={16}
+          loading="lazy"
+          decoding="async"
+        />
       </div>
     );
   }
@@ -27,10 +35,21 @@ export default function Item({
   const alt = item.amount > 1 ? `${item.name} (${item.amount})` : item.name;
 
   return (
-    <button type="button" aria-label={alt} className="item" onClick={() => setCurrentItem(item)}>
+    <button
+      type="button"
+      aria-label={alt}
+      data-item-key={item.key}
+      className="item"
+      onClick={() => setCurrentItem(item)}
+    >
       <img
         className={imageError === imageName ? "empty" : undefined}
-        title={alt}
+        width={256}
+        height={256}
+        loading="lazy"
+        decoding="async"
+        data-missing-icon={imageError === imageName || undefined}
+        title={imageError === imageName ? `${alt} — icon unavailable` : alt}
         alt={alt}
         src={
           imageError === imageName ? missing : `${import.meta.env.BASE_URL}images/${imageName}.png`

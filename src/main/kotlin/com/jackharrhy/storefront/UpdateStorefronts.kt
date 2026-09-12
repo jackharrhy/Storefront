@@ -1,6 +1,8 @@
 package com.jackharrhy.storefront
 
-import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.google.gson.JsonSerializer
+import org.bukkit.configuration.serialization.ConfigurationSerializable
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.bukkit.Bukkit
 import org.bukkit.block.Chest
@@ -13,7 +15,10 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.logging.Level
 
-private val inventoryGson = Gson()
+internal val inventoryGson = GsonBuilder().registerTypeHierarchyAdapter(
+    ConfigurationSerializable::class.java,
+    JsonSerializer<ConfigurationSerializable> { value, _, context -> context.serialize(value.serialize()) }
+).create()
 
 fun inventoryToJsonString(inventory: Inventory): String {
     check(Bukkit.isPrimaryThread()) { "Inventory snapshots must be captured on the server thread" }

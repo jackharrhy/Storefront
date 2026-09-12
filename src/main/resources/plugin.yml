@@ -7,6 +7,9 @@ authors: [cheesemany]
 description: whatcha buying whatcha selling
 website: https://github.com/jackharrhy/Storefront/
 commands:
+  storefrontcatalog:
+    description: Inspect item registries for the opt-in development fixture
+    permission: storefront.admin
   storefrontforceupdate:
     aliases: [forceupdate]
     permission: storefront.admin

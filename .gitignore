@@ -26,3 +26,7 @@ storefront-frontend/coverage/
 dev/bot/node_modules/
 
 storefront-frontend/public/images/
+
+dev/browser/node_modules/
+dev/reports/catalog.json
+dev/reports/catalog-*.png

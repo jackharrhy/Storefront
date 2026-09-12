@@ -83,6 +83,22 @@ services:
       paper:
         condition: service_healthy
 
+  catalog:
+    profiles: [catalog]
+    build: ./dev/bot
+    command: [node, catalog.js]
+    user: "${LOCAL_UID:-1000}:${LOCAL_GID:-1000}"
+    environment:
+      MC_HOST: paper
+      MC_VERSION: "26.1"
+      API_URL: http://paper:7000
+      RCON_PASSWORD: storefront-local-only
+    volumes:
+      - ./dev/reports:/reports
+    depends_on:
+      paper:
+        condition: service_healthy
+
   storefront-discord:
     profiles: [discord]
     build: ./storefront-discord/

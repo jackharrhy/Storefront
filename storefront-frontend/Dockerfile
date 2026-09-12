@@ -8,5 +8,5 @@ RUN npm run build
 FROM nginx:stable-alpine
 ENV API_PROXY_TARGET=http://host.docker.internal:7000
 COPY nginx.conf /etc/nginx/templates/default.conf.template
-COPY --from=build /app/dist /usr/share/nginx/html/storefront
+COPY --from=build /app/dist /usr/share/nginx/html
 EXPOSE 80

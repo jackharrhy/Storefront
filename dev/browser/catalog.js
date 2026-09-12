@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile, writeFile } from "node:fs/promises";
 import puppeteer from "puppeteer";
 
-const base = new URL(process.env.STOREFRONT_URL || "http://127.0.0.1:8080/storefront/");
+const base = new URL(process.env.STOREFRONT_URL || "http://127.0.0.1:8080/");
 const catalog = JSON.parse(
   await readFile(new URL("../reports/catalog.json", import.meta.url), "utf8"),
 );

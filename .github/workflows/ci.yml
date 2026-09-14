@@ -2,6 +2,8 @@ name: Build and test
 on:
   push:
   pull_request:
+  release:
+    types: [published]
 permissions:
   contents: read
 jobs:
@@ -18,7 +20,8 @@ jobs:
       - uses: actions/upload-artifact@v7
         with:
           name: storefront-plugin
-          path: target/storefront-2.0-SNAPSHOT.jar
+          path: target/storefront-*.jar
+          if-no-files-found: error
   javascript:
     runs-on: ubuntu-latest
     env:
@@ -35,3 +38,20 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+  release:
+    if: github.event_name == 'release'
+    needs: [plugin, javascript]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: storefront-plugin
+          path: release
+      - name: Attach plugin JAR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: gh release upload "$RELEASE_TAG" release/*.jar --clobber

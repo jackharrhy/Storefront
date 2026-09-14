@@ -7,7 +7,9 @@ import "./index.css";
 import { storefrontRoutes } from "./router.tsx";
 
 const queryClient = new QueryClient();
-const router = createBrowserRouter(storefrontRoutes(queryClient));
+const router = createBrowserRouter(storefrontRoutes(queryClient), {
+  basename: import.meta.env.BASE_URL,
+});
 const root = document.getElementById("root");
 if (!root) throw new Error("Missing application root");
 createRoot(root).render(

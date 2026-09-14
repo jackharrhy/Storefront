@@ -51,7 +51,9 @@ export default function Item({
         data-missing-icon={imageError === imageName || undefined}
         title={imageError === imageName ? `${alt} (icon unavailable)` : alt}
         alt={alt}
-        src={imageError === imageName ? missing : `/images/${imageName}.png`}
+        src={
+          imageError === imageName ? missing : `${import.meta.env.BASE_URL}images/${imageName}.png`
+        }
         onError={() => {
           setImageError(imageName);
         }}

@@ -12,7 +12,7 @@ cp storefront-discord/.env.dist storefront-discord/.env
 npm run dev:discord
 ```
 
-Set `STOREFRONT_DISCORD_TOKEN` and `STOREFRONT_URL` in that file before starting. For a bot running on your host against Compose, use `http://localhost:8080/`; the example's `http://storefront-frontend/` address is for Docker. `STOREFRONT_COMMAND_PREFIX` defaults to `sf!`.
+Set `STOREFRONT_DISCORD_TOKEN` and `STOREFRONT_URL` in that file before starting. For a bot running on your host against Compose, use `http://localhost:8080/`; the example's `http://storefront-frontend/` address is for Docker. Set `STOREFRONT_PUBLIC_URL` to the address Discord users can open, such as your public or tailnet URL. It defaults to `STOREFRONT_URL` when omitted. `STOREFRONT_COMMAND_PREFIX` defaults to `sf!`.
 
 Enable Message Content Intent in the Discord developer portal. The bot needs permission to view its channels, send messages, and attach files.
 
@@ -31,7 +31,7 @@ npm start -w storefront-discord
 
 ## Screenshots
 
-The bot reuses Chromium and gives each capture a separate browser context. It accepts two captures at once; further requests get a retry response and a website link. Captures wait for the frontend data, fonts, and lazy images. Images taller than 30,000 pixels or larger than 8 MB fall back to a link. SIGINT and SIGTERM close Discord and Chromium.
+The bot reuses Chromium with a separate browser context for each capture. It accepts two captures at once; further requests get a retry response and a website link. Captures wait for the frontend data, fonts, and lazy images. Images taller than 30,000 pixels or larger than 8 MB fall back to a link. SIGINT and SIGTERM close Discord and Chromium.
 
 Docker uses system Chromium. Local installs use Puppeteer's browser; set `PUPPETEER_EXECUTABLE_PATH` to use an existing installation. If browser downloads were skipped, run `npx puppeteer browsers install chrome`.
 

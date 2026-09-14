@@ -24,14 +24,10 @@ client.on(Events.MessageCreate, async (message) => {
   const command = parseCommand(message.content, config.commandPrefix);
   if (!command) return;
   try {
-    await message.reply(
-      await commandReply(command, config.storefrontUrl, config.commandPrefix, (url) =>
-        renderer.render(url),
-      ),
-    );
+    await message.reply(await commandReply(command, config, (url) => renderer.render(url)));
   } catch (error) {
     console.error(error);
-    const url = storefrontUrl(config.storefrontUrl, {
+    const url = storefrontUrl(config.publicUrl, {
       username: command.name === "show" ? command.username : null,
       simpleUI: false,
       timestamp: false,

@@ -13,8 +13,7 @@ export function parseCommand(content: string, prefix: string): Command | null {
 
 export async function commandReply(
   command: Command,
-  baseUrl: string,
-  prefix: string,
+  config: { storefrontUrl: string; publicUrl: string; commandPrefix: string },
   render: (url: string) => Promise<Uint8Array | null>,
 ): Promise<MessageCreateOptions> {
   const allowedMentions: MessageCreateOptions["allowedMentions"] = {
@@ -23,8 +22,8 @@ export async function commandReply(
   };
   if (command.name === "ping") return { content: "pong!", allowedMentions };
   if (!/^[a-zA-Z0-9_]{1,16}$/.test(command.username))
-    return { content: `Usage: ${prefix}show <Minecraft username>`, allowedMentions };
-  const url = storefrontUrl(baseUrl, {
+    return { content: `Usage: ${config.commandPrefix}show <Minecraft username>`, allowedMentions };
+  const url = storefrontUrl(config.storefrontUrl, {
     username: command.username,
     simpleUI: true,
     timestamp: true,
@@ -32,7 +31,7 @@ export async function commandReply(
   const screenshot = await render(url);
   if (!screenshot) return { content: "No storefronts found for that player.", allowedMentions };
   return {
-    content: `<${url}>`,
+    content: `<${storefrontUrl(config.publicUrl, { username: command.username, simpleUI: false, timestamp: false })}>`,
     files: [{ attachment: Buffer.from(screenshot), name: "storefront.png" }],
     allowedMentions,
   };

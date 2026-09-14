@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import { unzipSync } from "fflate";
 
-// Upstream's last 26.2 export is labelled "26.2 Pre-Release 2".
+// This pinned export is labelled "26.2 Pre-Release 2" upstream.
 const revision = "96b9b546b8797b1b544a8d9eed67c29b2a90b4cc";
 const sha256 = "d5245d8b883612a639a0f536f069aa921e298a1dd164eb80c92981b8659413b6";
 const url = `https://codeload.github.com/Owen1212055/mc-assets/zip/${revision}`;

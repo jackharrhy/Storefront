@@ -5,7 +5,6 @@ import org.bukkit.Registry
 import org.bukkit.command.CommandSender
 import org.bukkit.plugin.java.JavaPlugin
 
-// Registry introspection only; fixture world edits live in the development bot.
 fun fixtureCatalog(plugin: JavaPlugin, sender: CommandSender, args: Array<out String>) {
     if (!plugin.config.getBoolean("development.fixtures", false)) {
         sender.sendMessage("Fixture catalog is disabled")

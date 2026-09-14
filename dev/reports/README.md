@@ -19,7 +19,7 @@ The current refresh:
 5. Checks the row's modification token before updating or deleting it, protecting newer player edits and replacement listings from stale captures. Tokens are now monotonically increasing millisecond values; existing second-based values still work.
 6. Coalesces overlapping requests and exposes completion/timing through `/storefrontrefreshstatus`. `/storefrontforceupdate` acknowledges queuing, not completion.
 
-Sign registration, owner checks, manual sign updates, and sign removal still make small database calls on the server thread. This work addresses the bulk refresh bottleneck; it does not claim all database work is asynchronous.
+Sign registration, owner checks, manual sign updates, and sign removal still make small database calls on the server thread. Only bulk refresh database work runs on the worker.
 
 ## Workload and results
 
@@ -35,13 +35,17 @@ Mineflayer registered each shop by right-clicking its sign. RCON prepared the fi
 
 The dirty run changed slot zero in every chest before each sweep and verified the changed counts through the API. All three sweeps persisted 100 changes. It restored the original counts afterward.
 
-The baseline command took a median 460 ms because it performed the whole sweep before returning. The new command returns immediately; its response latency must not be compared as sweep duration. The final 100-chest sweep took 1.76 seconds spread across ticks, with a maximum capture batch of 3.84 ms. The dirty sweeps took 1.67–2.31 seconds, with maximum capture batches of 3.16–3.31 ms. Smoother ticks trade off against slower completion of a full sweep.
+The baseline command took a median 460 ms because it performed the whole sweep before returning. The new command returns immediately; its response latency must not be compared as sweep duration. The final 100-chest sweep took 1.76 seconds spread across ticks, with a maximum capture batch of 3.84 ms. The dirty sweeps took 1.67-2.31 seconds, with maximum capture batches of 3.16-3.31 ms. Smoother ticks trade off against slower completion of a full sweep.
 
-At 500 shops (13,500 occupied slots), all ten sweeps completed in 6.77–8.35 seconds. The maximum capture batch across those sweeps was 15.24 ms. All 500 fixture chests were accounted for in loaded chunks; the extra demo listing was skipped. The final one-minute tick maximum was 34.2 ms. The API served 1,622 requests with no errors; response latency increased because each request returns all shops. A final warmed-up dirty run on the final plugin build persisted 500 changes in each of three sweeps, verified every count through the API, and waited for restoration of all counts to 64 before unloading fixtures. Those sweeps took 7.66–7.91 seconds; the final one-minute tick maximum was 37.4 ms, with no HTTP errors.
+At 500 shops (13,500 occupied slots), all ten sweeps completed in 6.77-8.35 seconds. The maximum capture batch across those sweeps was 15.24 ms. All 500 fixture chests were accounted for in loaded chunks; the extra demo listing was skipped. The final one-minute tick maximum was 34.2 ms. The API served 1,622 requests with no errors; response latency increased because each request returns all shops. A final warmed-up dirty run on the final plugin build persisted 500 changes in each of three sweeps, verified every count through the API, and waited for restoration of all counts to 64 before unloading fixtures. Those sweeps took 7.66-7.91 seconds; the final one-minute tick maximum was 37.4 ms, with no HTTP errors.
 
 These tick numbers are Paper's rolling windows, not per-sweep percentiles. The final 10-second window reflects warmed-up operation. The first cold capture in the optimized run still took 121 ms, and its final one-minute tick window included a 446 ms maximum around startup/initial activity. The 2 ms budget is not a hard upper bound and does not eliminate JVM warm-up, chunk generation, GC, or other server work. Raw reports retain all windows and every refresh sample.
 
 After restarting the final build with no players connected, a refresh skipped all 501 unloaded listings and preserved the API data exactly. A second request during that sweep was coalesced. A map request for an unloaded fixture returned 404 without loading the chunk.
+
+## Merge review verification
+
+On 2026-09-14, the [500-shop write test](merge-review-500.json) passed after the storage cleanup. Each of three sweeps persisted 500 changes, with all counts checked through the API; the other 87 listings were in unloaded chunks. The 602 concurrent HTTP reads had no errors. The final 10-second tick maximum was 31.3 ms, and the sweeps took 7.72-11.15 seconds. The test restored every fixture count to 64 before releasing the chunks. This run checks the refactor against the existing workload; it is not a controlled speed comparison.
 
 ## Reproduce
 

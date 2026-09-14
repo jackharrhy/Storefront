@@ -76,6 +76,7 @@ it("shows quiet initial loading and keeps shops mounted during refresh", async (
   expect(screen.queryByAltText("Loading storefronts")).toBeNull();
   await act(async () => resolveRequest(response()));
   const shop = await screen.findByText("Alice");
+  expect(screen.getByRole("heading").textContent).toBe("Storefront");
   fireEvent.click(screen.getByText("Refresh"));
   expect(screen.getByText("Alice")).toBe(shop);
   expect(await screen.findByText("Updating storefronts…")).toBeTruthy();

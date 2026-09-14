@@ -49,7 +49,7 @@ export default function Item({
         loading="lazy"
         decoding="async"
         data-missing-icon={imageError === imageName || undefined}
-        title={imageError === imageName ? `${alt} — icon unavailable` : alt}
+        title={imageError === imageName ? `${alt} (icon unavailable)` : alt}
         alt={alt}
         src={imageError === imageName ? missing : `/images/${imageName}.png`}
         onError={() => {
@@ -57,7 +57,7 @@ export default function Item({
         }}
       />
       <span className="count">{item.amount > 1 ? item.amount : null}</span>
-      {item.maxDurability > 0 && Number(item.meta?.Damage ?? item.meta?.damage) > 0 && (
+      {item.maxDurability > 0 && Number(item.meta.Damage ?? item.meta.damage) > 0 && (
         <Damage
           maxDurability={item.maxDurability}
           damage={Number(item.meta.Damage ?? item.meta.damage)}

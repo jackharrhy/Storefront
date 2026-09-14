@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
 import java.sql.DriverManager
-import java.util.logging.Logger
 
 class RefreshTest {
     @TempDir lateinit var directory: Path
@@ -27,7 +26,7 @@ class RefreshTest {
     @Test
     fun `refresh changes are conditional so player edits and replacement rows survive stale captures`() {
         val database = directory.resolve("refresh.db").toString()
-        val storage = Storage(Logger.getAnonymousLogger(), database)
+        val storage = Storage(database)
         fun sql(statement: String) = DriverManager.getConnection("jdbc:sqlite:$database").use {
             it.createStatement().use { query -> query.executeUpdate(statement) }
         }

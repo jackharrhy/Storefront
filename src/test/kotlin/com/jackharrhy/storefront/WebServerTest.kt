@@ -11,14 +11,13 @@ import java.net.http.HttpResponse
 import java.nio.file.Path
 import java.time.Duration
 import java.util.concurrent.CompletableFuture
-import java.util.logging.Logger
 
 class WebServerTest {
     @TempDir lateinit var directory: Path
 
     @Test
     fun `serves JSON and completes invalid and missing map requests`() {
-        val storage = Storage(Logger.getAnonymousLogger(), directory.resolve("storefront.db").toString())
+        val storage = Storage(directory.resolve("storefront.db").toString())
         val app = createWebApp(storage) { id, _ ->
             if (id == 1) CompletableFuture.completedFuture("""{"world":"world","centerX":0,"centerZ":0}""")
             else CompletableFuture.failedFuture(NotFoundResponse("Map not found"))

@@ -1,305 +1,127 @@
 package com.jackharrhy.storefront
 
-import com.google.gson.GsonBuilder
+import com.google.gson.Gson
 import com.google.gson.JsonElement
-import com.google.gson.JsonObject
 import com.google.gson.JsonParser
-import org.bukkit.Bukkit
-import org.bukkit.Location
-import org.bukkit.entity.Player
 import org.jdbi.v3.core.Jdbi
-import java.io.File
-import java.util.concurrent.atomic.AtomicLong
 import org.sqlite.SQLiteDataSource
-import java.util.*
-import java.util.logging.Level
-import java.util.logging.Logger
-
-fun serializeLocation(location: Location): String {
-    return ("" + requireNotNull(location.world).name
-        + ":" + location.x
-        + ":" + location.y
-        + ":" + location.z)
-}
-
-fun deserializeLocation(serializedLocation: String): Location {
-    val splitLocation = serializedLocation.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-    return Location(
-        Bukkit.getWorld(splitLocation[0]),
-        java.lang.Double.parseDouble(splitLocation[1]),
-        java.lang.Double.parseDouble(splitLocation[2]),
-        java.lang.Double.parseDouble(splitLocation[3])
-    )
-}
-
-fun serializeOwner(player: Player): String {
-    val newPlayer = JsonObject()
-    newPlayer.addProperty("uuid", player.uniqueId.toString())
-    newPlayer.addProperty("name", player.name)
-    return GsonBuilder().create().toJson(newPlayer)
-}
-
-fun deserializeOwner(serializedOwner: String): Owner {
-    val owner = JsonParser.parseString(serializedOwner).asJsonObject
-    return Owner(
-        owner.getAsJsonPrimitive("uuid").asString,
-        owner.getAsJsonPrimitive("name").asString
-    )
-}
-
-fun flattenDescription(desc: Array<String>): String {
-    return GsonBuilder().create().toJson(desc)
-}
-
-fun <T : Any> Optional<T>.toNullable(): T? = this.orElse(null)
+import java.sql.ResultSet
+import java.util.concurrent.atomic.AtomicLong
 
 data class RefreshTarget(val id: Int, val location: String, val contents: String, val modified: Long)
 data class RefreshChange(val target: RefreshTarget, val contents: String?)
-
-data class Owner(val uuid: String , val name: String)
+data class Owner(val uuid: String, val name: String)
 data class Content(val id: Int, val owner: JsonElement, val contents: JsonElement, val description: JsonElement)
 
-class Storage(private val logger: Logger, fileName: String) {
-    private val jdbi: Jdbi
+class Storage(fileName: String) {
+    private val gson = Gson()
     private val modifiedClock = AtomicLong(System.currentTimeMillis())
+    private val jdbi = Jdbi.create(SQLiteDataSource().apply {
+        url = "jdbc:sqlite:$fileName"
+        config.setBusyTimeout(5000)
+    })
+
+    init {
+        jdbi.useHandle<RuntimeException> { handle ->
+            handle.execute("PRAGMA journal_mode=WAL")
+            handle.execute("""
+                CREATE TABLE IF NOT EXISTS chest (
+                    id INTEGER PRIMARY KEY,
+                    owner TEXT NOT NULL,
+                    location TEXT NOT NULL,
+                    contents TEXT NOT NULL,
+                    modified INTEGER NOT NULL,
+                    description TEXT NOT NULL
+                )
+            """.trimIndent())
+            handle.execute("CREATE INDEX IF NOT EXISTS chest_location ON chest(location)")
+            val latest = handle.createQuery("SELECT COALESCE(MAX(modified), 0) FROM chest")
+                .mapTo(Long::class.java).one()
+            modifiedClock.updateAndGet { maxOf(it, latest) }
+        }
+    }
+
     private fun nextModified(): Long = modifiedClock.updateAndGet { maxOf(it + 1, System.currentTimeMillis()) }
+
+    private fun readContent(row: ResultSet) = Content(
+        row.getInt("id"),
+        JsonParser.parseString(row.getString("owner")),
+        JsonParser.parseString(row.getString("contents")),
+        JsonParser.parseString(row.getString("description"))
+    )
 
     val allContents: List<Content>
         get() = jdbi.withHandle<List<Content>, RuntimeException> { handle ->
             handle.createQuery("SELECT id, owner, contents, description FROM chest")
-                .map {
-                    rs, _ -> Content(
-                            rs.getInt("id"),
-                    JsonParser.parseString(rs.getString("owner")),
-                    JsonParser.parseString(rs.getString("contents")),
-                    JsonParser.parseString(rs.getString("description"))
-                )
-                }
-                .list()
+                .map { row, _ -> readContent(row) }.list()
         }
 
+    fun storefrontContentsById(id: Int): Content? = jdbi.withHandle<Content?, RuntimeException> { handle ->
+        handle.select("SELECT id, owner, contents, description FROM chest WHERE id = ?", id)
+            .map { row, _ -> readContent(row) }.findOne().orElse(null)
+    }
+
+    fun storefrontLocationString(id: Int): String? = jdbi.withHandle<String?, RuntimeException> { handle ->
+        handle.select("SELECT location FROM chest WHERE id = ?", id)
+            .mapTo(String::class.java).findOne().orElse(null)
+    }
+
+    fun ownerUUID(location: String): String? = jdbi.withHandle<String?, RuntimeException> { handle ->
+        handle.select("SELECT json_extract(owner, '$.uuid') FROM chest WHERE location = ?", location)
+            .mapTo(String::class.java).findFirst().orElse(null)
+    }
+
+    fun newStorefront(owner: Owner, location: String, contents: String, description: Array<String>): Boolean =
+        jdbi.withHandle<Boolean, RuntimeException> { handle ->
+            handle.createUpdate("""
+                INSERT OR REPLACE INTO chest (id, owner, location, contents, modified, description)
+                VALUES ((SELECT id FROM chest WHERE location = :location),
+                    :owner, :location, :contents, :modified, :description)
+            """.trimIndent())
+                .bind("owner", gson.toJson(owner))
+                .bind("location", location)
+                .bind("contents", contents)
+                .bind("modified", nextModified())
+                .bind("description", gson.toJson(description))
+                .execute() == 1
+        }
+
+    fun updateStorefront(location: String, contents: String, description: Array<String>): Boolean =
+        jdbi.withHandle<Boolean, RuntimeException> { handle ->
+            handle.createUpdate("""
+                UPDATE chest SET contents = :contents, modified = :modified, description = :description
+                WHERE id = (SELECT id FROM chest WHERE location = :location)
+            """.trimIndent())
+                .bind("location", location)
+                .bind("contents", contents)
+                .bind("modified", nextModified())
+                .bind("description", gson.toJson(description))
+                .execute() == 1
+        }
+
+    fun removeStorefront(ownerUuid: String, location: String): Boolean =
+        jdbi.withHandle<Boolean, RuntimeException> { handle ->
+            handle.execute("DELETE FROM chest WHERE location = ? AND json_extract(owner, '$.uuid') = ?", location, ownerUuid) == 1
+        }
 
     fun refreshTargets(): List<RefreshTarget> = jdbi.withHandle<List<RefreshTarget>, RuntimeException> { handle ->
         handle.createQuery("SELECT id, location, contents, modified FROM chest ORDER BY id")
-            .map { rs, _ -> RefreshTarget(rs.getInt("id"), rs.getString("location"), rs.getString("contents"), rs.getLong("modified")) }
+            .map { row, _ -> RefreshTarget(row.getInt("id"), row.getString("location"), row.getString("contents"), row.getLong("modified")) }
             .list()
     }
 
     fun applyRefresh(changes: List<RefreshChange>): Int {
         if (changes.isEmpty()) return 0
         return jdbi.inTransaction<Int, RuntimeException> { handle ->
-            var affected = 0
-            for ((target, contents) in changes) {
+            changes.sumOf { (target, contents) ->
                 val statement = if (contents == null) {
                     handle.createUpdate("DELETE FROM chest WHERE id = :id AND modified = :previous")
                 } else {
                     handle.createUpdate("UPDATE chest SET contents = :contents, modified = :modified WHERE id = :id AND modified = :previous")
                         .bind("contents", contents).bind("modified", nextModified())
                 }
-                affected += statement.bind("id", target.id).bind("previous", target.modified).execute()
+                statement.bind("id", target.id).bind("previous", target.modified).execute()
             }
-            affected
-        }
-    }
-
-    init {
-        val dbFile = File(fileName)
-
-        if (!dbFile.exists()) {
-            try {
-                dbFile.createNewFile()
-            } catch (e: Exception) {
-                logger.log(Level.SEVERE, e.message)
-                e.printStackTrace()
-            }
-        }
-
-        val connectionString = "jdbc:sqlite:$fileName"
-        val dataSource = SQLiteDataSource().apply {
-            url = connectionString
-            config.setBusyTimeout(5000)
-        }
-        this.jdbi = Jdbi.create(dataSource)
-        this.initialize()
-    }
-
-    private fun initialize() {
-        val createChestTableSql = ("CREATE TABLE IF NOT EXISTS chest ( "
-            + "id INTEGER PRIMARY KEY, "
-            + "owner TEXT NOT NULL, "
-            + "location TEXT NOT NULL, "
-            + "contents TEXT NOT NULL, "
-            + "modified INTEGER NOT NULL, "
-            + "description TEXT NOT NULL "
-            + ")")
-
-        jdbi.useHandle<RuntimeException> { handle ->
-            handle.execute("PRAGMA journal_mode=WAL")
-            handle.execute(createChestTableSql)
-            handle.execute("CREATE INDEX IF NOT EXISTS chest_location ON chest(location)")
-            val latest = handle.createQuery("SELECT COALESCE(MAX(modified), 0) FROM chest").mapTo(Long::class.java).one()
-            modifiedClock.updateAndGet { maxOf(it, latest) }
-        }
-    }
-
-    fun newStorefront(owner: Player, location: Location, contents: String, description: Array<String>): Boolean? {
-        val ownerSerialized = serializeOwner(owner)
-        val locationSerialized = serializeLocation(location)
-        val flatDescription = flattenDescription(description)
-
-        val insertOrUpdateStorefrontSql = "INSERT OR REPLACE INTO chest " +
-            "(id, owner, location, contents, modified, description) " +
-            "VALUES ((SELECT id FROM chest WHERE location = :location), " +
-            ":owner, :location, :contents, :modified, :description)"
-
-        val updated = jdbi.withHandle<Int, RuntimeException> { handle ->
-            handle.createUpdate(insertOrUpdateStorefrontSql)
-                .bind("location", locationSerialized)
-                .bind("owner", ownerSerialized)
-                .bind("contents", contents)
-                .bind("modified", nextModified())
-                .bind("description", flatDescription)
-                .execute()
-        }
-
-        when (updated) {
-            1 -> return true
-            0 -> return false
-            else -> {
-                logger.log(Level.SEVERE, "Updated more than one storefront on a single call")
-            }
-        }
-        return null
-    }
-
-    fun updateStorefront(location: Location, contents: String): Boolean? {
-        val locationSerialized = serializeLocation(location)
-
-        val updateStorefrontSql = "UPDATE chest SET contents = :contents, modified = :modified " +
-            "WHERE id = (SELECT id FROM chest WHERE location = :location)"
-
-        val updated = jdbi.withHandle<Int, RuntimeException> { handle ->
-            handle.createUpdate(updateStorefrontSql)
-                .bind("location", locationSerialized)
-                .bind("contents", contents)
-                .bind("modified", nextModified())
-                .execute()
-        }
-
-        when (updated) {
-            1 -> return true
-            0 -> return false
-            else -> {
-                logger.log(Level.SEVERE, "Updated more than one storefront on a single call")
-            }
-        }
-        return null
-    }
-
-    fun updateStorefront(location: Location, contents: String, description: Array<String>): Boolean? {
-        val locationSerialized = serializeLocation(location)
-        val flatDescription = flattenDescription(description)
-
-        val updateStorefrontSql = "UPDATE chest SET " +
-            "contents = :contents, modified = :modified, description = :description " +
-            "WHERE id = (SELECT id FROM chest WHERE location = :location)"
-
-        val updated = jdbi.withHandle<Int, RuntimeException> { handle ->
-            handle.createUpdate(updateStorefrontSql)
-                .bind("location", locationSerialized)
-                .bind("contents", contents)
-                .bind("modified", nextModified())
-                .bind("description", flatDescription)
-                .execute()
-        }
-
-        when (updated) {
-            1 -> return true
-            0 -> return false
-            else -> {
-                logger.log(Level.SEVERE, "Updated more than one storefront on a single call")
-            }
-        }
-        return null
-    }
-
-    fun removeStorefront(owner: Player, location: Location): Boolean? {
-        val removeStorefrontSql = "DELETE FROM chest WHERE location = ? AND json_extract(owner, '$.uuid') = ?"
-
-        val removed = jdbi.withHandle<Int, RuntimeException> { handle ->
-            handle.execute(removeStorefrontSql, serializeLocation(location), owner.uniqueId.toString())
-        }
-
-        when (removed) {
-            1 -> return true
-            0 -> return false
-            else -> logger.log(Level.SEVERE, "Removed an unexpected number of storefronts ($removed)")
-        }
-        return null
-    }
-
-    fun storefrontExists(location: Location): Boolean {
-        val storefrontCountSql = "SELECT COUNT(*) FROM chest WHERE location = ?"
-
-        val count = jdbi.withHandle<Int?, RuntimeException> { handle ->
-            handle.select(storefrontCountSql, serializeLocation(location)).mapTo(Int::class.java).findOne().toNullable()
-        }
-
-        when (count) {
-            1 -> return true
-            0 -> return false
-            else -> logger.log(Level.SEVERE, "Found an unexpected number of storefronts on a single call ($count)")
-        }
-        return false
-    }
-
-
-    fun storefrontLocationString(storefrontId: Int): String? {
-        val storefrontLocationSql = "SELECT location FROM chest WHERE id = ?"
-
-        val serializedLocation = jdbi.withHandle<String?, RuntimeException> { handle ->
-            handle.select(storefrontLocationSql, storefrontId).mapTo(String::class.java).findOne().toNullable()
-        }
-
-        return serializedLocation
-    }
-
-    fun storefrontContentsById(id: Int) : Content? {
-        return jdbi.withHandle<Content?, RuntimeException> { handle ->
-            handle.select("SELECT id, owner, contents, description FROM chest WHERE id = ?", id)
-                .map {
-                    rs, _ -> Content(
-                            rs.getInt("id"),
-                    JsonParser.parseString(rs.getString("owner")),
-                    JsonParser.parseString(rs.getString("contents")),
-                    JsonParser.parseString(rs.getString("description"))
-                )}
-                .findOne().toNullable()
-        }
-    }
-
-    fun removeStorefront(location: Location): Boolean? {
-        val removeStorefrontSql = "DELETE FROM chest WHERE location = ?"
-
-        val removed = jdbi.withHandle<Int, RuntimeException> { handle ->
-            handle.execute(removeStorefrontSql, serializeLocation(location))
-        }
-
-        when (removed) {
-            1 -> return true
-            0 -> return false
-            else -> logger.log(Level.SEVERE, "Removed more than one storefront on a single call")
-        }
-        return null
-    }
-
-    fun ownerUUID(location: Location): Optional<String> {
-        val getOwnerFromChestSql = "SELECT owner FROM chest WHERE location = ?"
-        return jdbi.withHandle<Optional<String>, RuntimeException> { handle ->
-            handle.select(getOwnerFromChestSql, serializeLocation(location))
-                .mapTo(String::class.java)
-                .findFirst()
-                .map { serializedOwner -> deserializeOwner(serializedOwner).uuid }
         }
     }
 }

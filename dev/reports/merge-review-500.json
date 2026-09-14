@@ -1,0 +1,62 @@
+{
+  "label": "merge-review",
+  "count": 500,
+  "dirty": true,
+  "rounds": 3,
+  "itemsPerChest": 27,
+  "readers": 4,
+  "timestamp": "2026-09-14T19:30:56.574Z",
+  "before": "Server tick times (avg/min/max) from last 5s, 10s, 1m:\n◴ 5.7/2.9/9.0, 6.5/0.2/54.0, 5.0/0.2/477.1",
+  "after": "Server tick times (avg/min/max) from last 5s, 10s, 1m:\n◴ 4.6/1.5/8.1, 5.5/1.5/31.3, 4.7/0.2/75.4",
+  "refreshCommandMs": {
+    "p50": 0.44657599999845843,
+    "p95": 0.8117779999993218,
+    "max": 0.8117779999993218,
+    "samples": [
+      0.8117779999993218,
+      0.44657599999845843,
+      0.4331740000015998
+    ]
+  },
+  "apiMs": {
+    "requests": 602,
+    "p50": 108.4098890000023,
+    "p95": 146.93936799999938,
+    "max": 269.8320780000013
+  },
+  "errors": [],
+  "replies": [
+    "Storefront refresh queued",
+    "Storefront refresh queued",
+    "Storefront refresh queued"
+  ],
+  "refreshes": [
+    {
+      "running": false,
+      "completed": 3,
+      "targets": 587,
+      "changed": 500,
+      "skippedUnloaded": 87,
+      "maxCaptureMs": 6.752446,
+      "elapsedMs": 11151.356412
+    },
+    {
+      "running": false,
+      "completed": 4,
+      "targets": 587,
+      "changed": 500,
+      "skippedUnloaded": 87,
+      "maxCaptureMs": 17.718997,
+      "elapsedMs": 7715.824925
+    },
+    {
+      "running": false,
+      "completed": 5,
+      "targets": 587,
+      "changed": 500,
+      "skippedUnloaded": 87,
+      "maxCaptureMs": 3.706003,
+      "elapsedMs": 8125.58309
+    }
+  ]
+}

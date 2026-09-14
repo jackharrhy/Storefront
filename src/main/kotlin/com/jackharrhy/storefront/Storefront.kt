@@ -3,6 +3,8 @@ package com.jackharrhy.storefront
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
+import org.bukkit.Bukkit
+import org.bukkit.Location
 import org.bukkit.Sound
 import org.bukkit.block.Chest
 import org.bukkit.block.Sign
@@ -11,6 +13,14 @@ import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
+
+fun serializeLocation(location: Location): String =
+    "${requireNotNull(location.world).name}:${location.x}:${location.y}:${location.z}"
+
+fun deserializeLocation(value: String): Location {
+    val (world, x, y, z) = value.split(":")
+    return Location(Bukkit.getWorld(world), x.toDouble(), y.toDouble(), z.toDouble())
+}
 
 fun signDescription(sign: Sign): Array<String> = sign.getSide(Side.FRONT).lines()
     .map { PlainTextComponentSerializer.plainText().serialize(it) }.toTypedArray()
@@ -23,7 +33,7 @@ class Storefront : JavaPlugin() {
     override fun onEnable() {
         saveDefaultConfig()
         check(dataFolder.isDirectory || dataFolder.mkdirs()) { "Could not create $dataFolder" }
-        storage = Storage(logger, dataFolder.resolve("storefront.db").absolutePath)
+        storage = Storage(dataFolder.resolve("storefront.db").absolutePath)
         app = WebServer(this, storage)
         SignListener(this, storage)
         val updater = UpdateStorefronts(this, storage)
@@ -57,12 +67,12 @@ class Storefront : JavaPlugin() {
     }
 
     fun removeStorefront(player: Player, chest: Chest): Boolean {
-        val owner = storage.ownerUUID(chest.location).orElse(null) ?: return true
+        val owner = storage.ownerUUID(serializeLocation(chest.location)) ?: return true
         if (owner != player.uniqueId.toString()) {
             player.sendMessage(Component.text("This isn't your storefront!", NamedTextColor.RED))
             return false
         }
-        if (storage.removeStorefront(player, chest.location) != true) {
+        if (!storage.removeStorefront(player.uniqueId.toString(), serializeLocation(chest.location))) {
             player.sendMessage(Component.text("Failed to remove storefront", NamedTextColor.RED))
             return false
         }
@@ -72,8 +82,13 @@ class Storefront : JavaPlugin() {
     }
 
     fun newStorefront(player: Player, chest: Chest, sign: Sign): Boolean {
-        if (storage.storefrontExists(chest.location)) return updateStorefront(player, chest, sign)
-        val created = storage.newStorefront(player, chest.location, inventoryToJsonString(chest.inventory), signDescription(sign)) == true
+        if (storage.ownerUUID(serializeLocation(chest.location)) != null) return updateStorefront(player, chest, sign)
+        val created = storage.newStorefront(
+            Owner(player.uniqueId.toString(), player.name),
+            serializeLocation(chest.location),
+            inventoryToJsonString(chest.inventory),
+            signDescription(sign)
+        )
         player.sendMessage(Component.text(
             if (created) "Storefront created" else "Failed to create storefront",
             if (created) NamedTextColor.BLUE else NamedTextColor.RED
@@ -83,11 +98,13 @@ class Storefront : JavaPlugin() {
     }
 
     fun updateStorefront(player: Player, chest: Chest, sign: Sign): Boolean {
-        if (storage.ownerUUID(chest.location).orElse(null) != player.uniqueId.toString()) {
+        if (storage.ownerUUID(serializeLocation(chest.location)) != player.uniqueId.toString()) {
             player.sendMessage(Component.text("This isn't your storefront!", NamedTextColor.RED))
             return false
         }
-        val updated = storage.updateStorefront(chest.location, inventoryToJsonString(chest.inventory), signDescription(sign)) == true
+        val updated = storage.updateStorefront(
+            serializeLocation(chest.location), inventoryToJsonString(chest.inventory), signDescription(sign)
+        )
         player.sendMessage(Component.text(
             if (updated) "Storefront updated" else "Failed to update storefront",
             if (updated) NamedTextColor.AQUA else NamedTextColor.RED

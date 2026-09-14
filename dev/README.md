@@ -37,7 +37,7 @@ npm ci
 npm run dev
 ```
 
-Open `http://localhost:5173/`. Vite proxies `/api/` to the plugin at `http://127.0.0.1:7000`. Set `API_PROXY_TARGET` in `storefront-frontend/.env.local` to use another backend. API failures have a retry button, so the UI also starts without a running Minecraft server.
+Open `http://localhost:5173/`. Vite proxies `/api/` to the plugin at `http://127.0.0.1:7000`. Set `API_PROXY_TARGET` in `storefront-frontend/.env.local` to use another backend. Without a running Minecraft server, the UI shows an API error and a retry button.
 
 Frontend development and builds fetch inventory icons automatically, including Docker builds. `npm run icons -w storefront-frontend` fetches them explicitly. The downloader verifies a pinned archive checksum, converts the rendered icon names to lowercase, and caches 1,537 PNGs in `storefront-frontend/public/images/`. Generated graphics are excluded from Git. A missing icon in the cache causes a fresh download; `npm run icons -w storefront-frontend -- --force` refreshes the entire set.
 
@@ -82,15 +82,13 @@ No local JDK or Maven install is needed for this path. The first build downloads
 
 This is an isolated development world in the `storefront-dev_paper-data` Docker volume. Ports bind to localhost, the server uses offline authentication for test bots, and RCON is available only inside the Compose network. The Compose service sets `EULA=TRUE`, accepting the [Minecraft EULA](https://www.minecraft.net/eula). Do not reuse this offline configuration for a public server. Set `MC_PORT`, `WEB_PORT`, or `API_PORT` in your shell to change the host ports.
 
-Run the real headless client test:
+Run the headless client test:
 
 ```sh
 docker compose --profile test run --build --rm bot
 ```
 
-[Mineflayer](https://github.com/PrismarineJS/mineflayer) connects as `StorefrontBot` without graphics or a Microsoft login. Its supported protocol is currently 26.1; pinned ViaVersion/ViaBackwards 5.11.0 plugins translate it to Paper 26.2. The test uses RCON to prepare a chest and sign near **0, 65, 0**, then has the bot right-click the sign, checks the plugin's HTTP response, changes the chest contents, verifies refresh, and breaks the sign to verify removal. It recreates the demo shop at the end so you can see it in the frontend. Rerunning replaces only this fixture area and its listing.
-
-Useful commands:
+[Mineflayer](https://github.com/PrismarineJS/mineflayer) connects as `StorefrontBot` without graphics or a Microsoft login. Its supported protocol is currently 26.1; pinned ViaVersion/ViaBackwards 5.11.0 plugins translate it to Paper 26.2. The test uses RCON to prepare a chest and sign near `0, 65, 0`, then has the bot right-click the sign, checks the plugin's HTTP response, changes the chest contents, verifies refresh, and breaks the sign to verify removal. It recreates the demo shop at the end so you can see it in the frontend. Rerunning replaces only this fixture area and its listing.
 
 ```sh
 # Logs and an operator command, without attaching a graphical client
@@ -131,10 +129,10 @@ STOREFRONTS=100 SETUP=false RUN_LABEL=repeat docker compose --profile stress run
 STOREFRONTS=100 SETUP=false DIRTY=true RUN_LABEL=dirty docker compose --profile stress run --rm stress
 ```
 
-The bot registers full chests by interacting with signs in a grid beginning at **1024, 65, 1024**, then runs ten refreshes alongside four HTTP readers. `DIRTY=true` runs three sweeps with an item-count change in every chest and restores the original counts afterward. Reports are saved to `dev/reports/`. The stress container writes as UID/GID 1000 by default; set `LOCAL_UID` and `LOCAL_GID` to match your user if needed. Fixture chunks stay loaded for measurement and are released afterward. Listings and fixture blocks persist for inspection; reuse the same count for `SETUP=false`. This exercises actual server inventory serialization and API reads, but does not simulate many concurrent players.
+The bot registers full chests by interacting with signs in a grid beginning at `1024, 65, 1024`, then runs ten refreshes alongside four HTTP readers. `DIRTY=true` runs three sweeps with an item-count change in every chest and restores the original counts afterward. Reports are saved to `dev/reports/`. The stress container writes as UID/GID 1000 by default; set `LOCAL_UID` and `LOCAL_GID` to match your user if needed. Fixture chunks stay loaded for measurement and are released afterward. Listings and fixture blocks persist for inspection; reuse the same count for `SETUP=false`. This exercises actual server inventory serialization and API reads, but does not simulate many concurrent players.
 
 ## Every-item rendering fixture
 
 The item catalog uses Paper's live registry and includes potion, enchantment, trim, dye, durability, and other metadata variants. Run `docker compose --profile catalog run --build --rm catalog` after rebuilding the stack, then visit `/?username=StorefrontItems`.
 
-See [catalog setup and browser audit](browser/README.md) for the exact coverage boundaries, image audit, and viewport-loading checks. The fixture also exposes the difference between having an image for every base item and rendering every metadata-dependent appearance.
+See [catalog setup and browser audit](browser/README.md) for the exact coverage boundaries, image audit, and viewport-loading checks. The fixture checks base item images; metadata variants can still share the same sprite.

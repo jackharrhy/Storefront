@@ -38,7 +38,8 @@ class SignListener(private val plugin: Storefront, private val storage: Storage)
         val sign = event.block.state as? Sign ?: return
         val chest = getChestFromSign(sign) ?: return
         val playerId = event.player.uniqueId.toString()
-        if (storage.ownerUUID(chest.location).orElse(playerId) != playerId) {
+        val ownerId = storage.ownerUUID(serializeLocation(chest.location))
+        if (ownerId != null && ownerId != playerId) {
             event.isCancelled = true
             return
         }

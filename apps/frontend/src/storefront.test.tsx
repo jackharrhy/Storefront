@@ -31,11 +31,15 @@ afterEach(() => {
   routers.splice(0).forEach((router) => router.dispose());
   clients.splice(0).forEach((client) => client.clear());
   vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
 });
 function mount(path = "/") {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   clients.push(client);
-  const router = createMemoryRouter(storefrontRoutes(client), { initialEntries: [path] });
+  const router = createMemoryRouter(storefrontRoutes(client), {
+    initialEntries: [path],
+    basename: import.meta.env.BASE_URL,
+  });
   routers.push(router);
   render(
     <QueryClientProvider client={client}>
@@ -47,6 +51,18 @@ function mount(path = "/") {
 function response(data: unknown = fixtures) {
   return new Response(JSON.stringify(data), { status: 200 });
 }
+
+it("loads shops and item icons under the configured base path", async () => {
+  vi.stubEnv("BASE_URL", "/storefront/");
+  const fetch = vi.fn<typeof globalThis.fetch>().mockImplementation(async () => response());
+  vi.stubGlobal("fetch", fetch);
+  mount("/storefront/?username=Alice");
+  await screen.findByText("Alice");
+  expect(fetch.mock.calls[0]?.[0]).toBe("/storefront/api/storefronts/");
+  expect(screen.getByAltText("Diamond (2)").getAttribute("src")).toBe(
+    "/storefront/images/diamond.png",
+  );
+});
 
 it("loads once through the router and filters cached data on navigation", async () => {
   const fetch = vi.fn<typeof globalThis.fetch>().mockImplementation(async () => response());

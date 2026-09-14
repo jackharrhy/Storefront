@@ -8,7 +8,8 @@ COPY apps/discord/package.json apps/discord/package.json
 COPY packages/shared packages/shared
 RUN npm ci
 COPY apps/frontend apps/frontend
-RUN npm run build -w storefront-frontend
+ARG BASE_PATH=/
+RUN npm run build -w storefront-frontend -- --base=${BASE_PATH}
 
 FROM nginx:stable-alpine
 ENV API_PROXY_TARGET=http://host.docker.internal:7000

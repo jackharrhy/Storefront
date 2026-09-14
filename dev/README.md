@@ -111,7 +111,11 @@ The frontend's nginx proxy targets `paper:7000` in Compose. For standalone hosti
 
 The optional Discord screenshot bot uses TypeScript, Node 24, discord.js 14, and Puppeteer 25. It shares storefront types and URL options with the frontend through `@storefront/shared`. See [Discord setup and screenshot checks](../apps/discord/README.md).
 
-CI builds and tests the plugin and all three JavaScript workspaces on pushes and pull requests. The Docker publishing workflow runs only on `master` and uses the existing Docker Hub secrets.
+CI builds and tests the plugin and all three JavaScript workspaces on pushes and pull requests. Each run saves the installable JAR (including its dependencies) as the `storefront-plugin` Actions artifact.
+
+To release, update the version in `pom.xml`, then publish a GitHub Release for that commit’s tag. CI tests the tagged code and attaches the JAR to the release after both jobs pass, including for pre-releases. The tag must include this workflow. Re-running the release job replaces the attachment.
+
+The Docker publishing workflow runs only on `master` and uses the existing Docker Hub secrets.
 
 ## Refresh scheduling and stress testing
 

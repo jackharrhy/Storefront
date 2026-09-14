@@ -118,10 +118,16 @@ it("retains stale shops when background refresh fails", async () => {
   expect(screen.getByText("Alice")).toBe(shop);
 });
 
-it("rejects malformed API data at the query boundary", async () => {
+it.each([
+  { label: "missing fields", data: [{ id: 1 }] },
+  {
+    label: "invalid item metadata",
+    data: [{ ...fixtures[0], contents: [{ ...fixtures[0]!.contents[1], meta: [] }] }],
+  },
+])("rejects $label at the query boundary", async ({ data }) => {
   vi.stubGlobal(
     "fetch",
-    vi.fn<typeof globalThis.fetch>().mockImplementation(async () => response([{ id: 1 }])),
+    vi.fn<typeof globalThis.fetch>().mockImplementation(async () => response(data)),
   );
   mount();
   expect((await screen.findByRole("alert")).textContent).toContain("invalid storefront data");

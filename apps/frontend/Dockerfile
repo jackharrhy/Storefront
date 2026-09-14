@@ -3,15 +3,15 @@ WORKDIR /app
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 COPY package.json package-lock.json tsconfig.base.json ./
 COPY packages/shared/package.json packages/shared/package.json
-COPY storefront-frontend/package.json storefront-frontend/package.json
-COPY storefront-discord/package.json storefront-discord/package.json
+COPY apps/frontend/package.json apps/frontend/package.json
+COPY apps/discord/package.json apps/discord/package.json
 COPY packages/shared packages/shared
 RUN npm ci
-COPY storefront-frontend storefront-frontend
+COPY apps/frontend apps/frontend
 RUN npm run build -w storefront-frontend
 
 FROM nginx:stable-alpine
 ENV API_PROXY_TARGET=http://host.docker.internal:7000
-COPY storefront-frontend/nginx.conf /etc/nginx/templates/default.conf.template
-COPY --from=build /app/storefront-frontend/dist /usr/share/nginx/html
+COPY apps/frontend/nginx.conf /etc/nginx/templates/default.conf.template
+COPY --from=build /app/apps/frontend/dist /usr/share/nginx/html
 EXPOSE 80

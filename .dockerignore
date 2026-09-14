@@ -2,10 +2,10 @@ caddy/caddy
 caddy/images
 test-server/
 
-storefront-frontend/dist
-storefront-frontend/.cache
-storefront-frontend/node_modules
-storefront-frontend/npm-debug.log*
+apps/frontend/dist
+apps/frontend/.cache
+apps/frontend/node_modules
+apps/frontend/npm-debug.log*
 
 target/
 storefront.iml

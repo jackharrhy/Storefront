@@ -37,9 +37,11 @@ npm ci
 npm run dev
 ```
 
-Open `http://localhost:5173/`. Vite proxies `/api/` to the plugin at `http://127.0.0.1:7000`. Set `API_PROXY_TARGET` in `storefront-frontend/.env.local` to use another backend. Without a running Minecraft server, the UI shows an API error and a retry button.
+Open `http://localhost:5173/`. Vite proxies `/api/` to the plugin at `http://127.0.0.1:7000`. Set `API_PROXY_TARGET` in `apps/frontend/.env.local` to use another backend. Without a running Minecraft server, the UI shows an API error and a retry button.
 
-Frontend development and builds fetch inventory icons automatically, including Docker builds. `npm run icons -w storefront-frontend` fetches them explicitly. The downloader verifies a pinned archive checksum, converts the rendered icon names to lowercase, and caches 1,537 PNGs in `storefront-frontend/public/images/`. Generated graphics are excluded from Git. A missing icon in the cache causes a fresh download; `npm run icons -w storefront-frontend -- --force` refreshes the entire set.
+The npm workspace contains `apps/frontend`, `apps/discord`, and `packages/shared`. Run npm commands from the repository root.
+
+Frontend development and builds fetch inventory icons automatically, including Docker builds. `npm run icons -w storefront-frontend` fetches them explicitly. The downloader verifies a pinned archive checksum, converts the rendered icon names to lowercase, and caches 1,537 PNGs in `apps/frontend/public/images/`. Generated graphics are excluded from Git. A missing icon in the cache causes a fresh download; `npm run icons -w storefront-frontend -- --force` refreshes the entire set.
 
 The render source is [Owen1212055/mc-assets](https://github.com/Owen1212055/mc-assets/tree/96b9b546b8797b1b544a8d9eed67c29b2a90b4cc), pinned to its **26.2 Pre-Release 2** export. These are 256×256 inventory renders, including 3D blocks, rather than raw block-face textures. This is not an exact final-26.2 export; new or variant-specific materials may still need custom icons. The graphics originate from Minecraft; the upstream project supplies the renders.
 
@@ -64,7 +66,7 @@ npm run build
 npm run preview -w storefront-frontend
 ```
 
-`storefront-frontend/dist/` is a static site served under `/`. Production hosting must strip `/api` when proxying to the plugin (`/api/storefronts/` → `http://127.0.0.1:7000/storefronts/`), serve `/images/`, and fall back to `index.html` for application routes. `npm run preview` previews static output only; it does not configure the production API proxy.
+`apps/frontend/dist/` is a static site served under `/`. Production hosting must strip `/api` when proxying to the plugin (`/api/storefronts/` → `http://127.0.0.1:7000/storefronts/`), serve `/images/`, and fall back to `index.html` for application routes. `npm run preview` previews static output only; it does not configure the production API proxy.
 
 ## Local Paper server and headless test
 
@@ -107,7 +109,7 @@ docker compose down
 
 The frontend's nginx proxy targets `paper:7000` in Compose. For standalone hosting, set the container's `API_PROXY_TARGET` to another backend URL (without a trailing slash). Textures may be included in `public/images/` before building or mounted at `/usr/share/nginx/html/images/`.
 
-The optional Discord screenshot bot uses TypeScript, Node 24, discord.js 14, and Puppeteer 25. It shares storefront types and URL options with the frontend through `@storefront/shared`. See [Discord setup and screenshot checks](../storefront-discord/README.md).
+The optional Discord screenshot bot uses TypeScript, Node 24, discord.js 14, and Puppeteer 25. It shares storefront types and URL options with the frontend through `@storefront/shared`. See [Discord setup and screenshot checks](../apps/discord/README.md).
 
 CI builds and tests the plugin and all three JavaScript workspaces on pushes and pull requests. The Docker publishing workflow runs only on `master` and uses the existing Docker Hub secrets.
 

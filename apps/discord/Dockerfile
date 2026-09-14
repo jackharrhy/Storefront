@@ -3,11 +3,11 @@ WORKDIR /app
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 COPY package.json package-lock.json tsconfig.base.json ./
 COPY packages/shared/package.json packages/shared/package.json
-COPY storefront-frontend/package.json storefront-frontend/package.json
-COPY storefront-discord/package.json storefront-discord/package.json
+COPY apps/frontend/package.json apps/frontend/package.json
+COPY apps/discord/package.json apps/discord/package.json
 COPY packages/shared packages/shared
 RUN npm ci
-COPY storefront-discord storefront-discord
+COPY apps/discord apps/discord
 RUN npm run build -w storefront-discord
 RUN npm ci --omit=dev --workspace=storefront-discord --workspace=@storefront/shared --ignore-scripts
 
@@ -20,7 +20,7 @@ WORKDIR /app
 COPY --from=build /app/package.json ./package.json
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/packages/shared ./packages/shared
-COPY --from=build /app/storefront-discord/package.json ./storefront-discord/package.json
-COPY --from=build /app/storefront-discord/dist ./storefront-discord/dist
+COPY --from=build /app/apps/discord/package.json ./apps/discord/package.json
+COPY --from=build /app/apps/discord/dist ./apps/discord/dist
 USER node
-CMD ["node", "storefront-discord/dist/index.js"]
+CMD ["node", "apps/discord/dist/index.js"]

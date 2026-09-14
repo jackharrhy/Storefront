@@ -2,16 +2,14 @@ caddy/caddy
 caddy/images
 test-server/
 
-storefront-frontend/dist
-storefront-frontend/.cache
-storefront-frontend/node_modules
-storefront-frontend/npm-debug.log*
+apps/frontend/dist
+apps/frontend/.cache
+apps/frontend/npm-debug.log*
 
-storefront-discord/.env
-storefront-discord/dist
-storefront-discord/.cache
-storefront-discord/node_modules
-storefront-discord/npm-debug.log*
+apps/discord/.env
+apps/discord/dist
+apps/discord/.cache
+apps/discord/npm-debug.log*
 
 target/
 storefront.iml
@@ -20,16 +18,13 @@ storefront.iml
 .project
 .settings/
 
-storefront-frontend/.env.local
-storefront-frontend/coverage/
+apps/frontend/.env.local
+apps/frontend/coverage/
 
-dev/bot/node_modules/
+apps/frontend/public/images/
 
-storefront-frontend/public/images/
-
-dev/browser/node_modules/
 dev/reports/catalog.json
 dev/reports/catalog-*.png
 
-/node_modules/
 packages/*/dist/
+node_modules/

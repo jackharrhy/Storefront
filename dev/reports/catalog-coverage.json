@@ -1,7 +1,7 @@
 {
   "minecraft": "26.2",
   "browser": "Chrome/153.0.8010.12",
-  "timestamp": "2026-09-14T19:29:05.321Z",
+  "timestamp": "2026-09-14T19:40:37.003Z",
   "itemTypes": 1536,
   "entries": 2307,
   "excluded": [],
@@ -72,7 +72,7 @@
       "width": 1280,
       "height": 800,
       "shops": 86,
-      "initialIconRequests": 218,
+      "initialIconRequests": 299,
       "totalIconRequests": 1536,
       "renderedItemTypes": 1536,
       "renderedSamples": 2307,

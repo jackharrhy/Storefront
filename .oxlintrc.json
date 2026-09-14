@@ -8,5 +8,10 @@
     "react/rules-of-hooks": "error",
     "react/exhaustive-deps": "error"
   },
-  "ignorePatterns": ["**/dist/**", "**/public/images/**", "**/package-lock.json"]
+  "ignorePatterns": [
+    "**/dist/**",
+    "**/public/images/**",
+    "**/package-lock.json",
+    "**/node_modules/**"
+  ]
 }

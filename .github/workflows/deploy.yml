@@ -9,7 +9,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        project: [storefront-frontend, storefront-discord]
+        include:
+          - project: storefront-frontend
+            path: apps/frontend
+          - project: storefront-discord
+            path: apps/discord
     steps:
       - uses: actions/checkout@v7
       - uses: docker/setup-buildx-action@v4
@@ -20,6 +24,6 @@ jobs:
       - uses: docker/build-push-action@v7
         with:
           context: .
-          file: ${{ matrix.project }}/Dockerfile
+          file: ${{ matrix.path }}/Dockerfile
           push: true
           tags: jackharrhy/${{ matrix.project }}:latest

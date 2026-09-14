@@ -1,5 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
-import { parseStorefronts, type Storefront } from "@storefront/shared";
+import { storefrontsSchema, type Storefront } from "@storefront/shared";
 
 export const storefrontQuery = queryOptions({
   queryKey: ["storefronts"],
@@ -7,7 +7,9 @@ export const storefrontQuery = queryOptions({
     const response = await fetch("/api/storefronts/", { signal });
     if (!response.ok) throw new Error(`Unable to load storefronts (${response.status}).`);
     const data: unknown = await response.json();
-    return parseStorefronts(data);
+    const result = storefrontsSchema.safeParse(data);
+    if (!result.success) throw new Error("The server returned invalid storefront data.");
+    return result.data;
   },
   staleTime: 30_000,
   refetchOnWindowFocus: false,

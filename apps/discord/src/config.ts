@@ -5,7 +5,7 @@ config({ path: fileURLToPath(new URL("../.env", import.meta.url)), quiet: true }
 
 export function readConfig(env: NodeJS.ProcessEnv = process.env) {
   const token = env.STOREFRONT_DISCORD_TOKEN?.trim();
-  if (!token) throw new Error("Set STOREFRONT_DISCORD_TOKEN in storefront-discord/.env.");
+  if (!token) throw new Error("Set STOREFRONT_DISCORD_TOKEN in apps/discord/.env.");
   const storefrontUrl = new URL(env.STOREFRONT_URL || "http://localhost:8080/");
   if (!["http:", "https:"].includes(storefrontUrl.protocol))
     throw new Error("STOREFRONT_URL must be an HTTP or HTTPS URL.");

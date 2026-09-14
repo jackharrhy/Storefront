@@ -43,7 +43,7 @@ services:
   storefront-frontend:
     build:
       context: .
-      dockerfile: storefront-frontend/Dockerfile
+      dockerfile: apps/frontend/Dockerfile
     environment:
       API_PROXY_TARGET: http://paper:7000
     depends_on:
@@ -105,9 +105,9 @@ services:
     profiles: [discord]
     build:
       context: .
-      dockerfile: storefront-discord/Dockerfile
+      dockerfile: apps/discord/Dockerfile
     env_file:
-      - path: ./storefront-discord/.env
+      - path: ./apps/discord/.env
         required: false
     depends_on:
       storefront-frontend:

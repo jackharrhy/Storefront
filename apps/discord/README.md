@@ -8,7 +8,7 @@ Use Node 24. From the repository root:
 
 ```sh
 npm ci
-cp storefront-discord/.env.dist storefront-discord/.env
+cp apps/discord/.env.dist apps/discord/.env
 npm run dev:discord
 ```
 

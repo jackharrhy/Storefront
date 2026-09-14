@@ -2,9 +2,8 @@
   "name": "storefront",
   "private": true,
   "workspaces": [
-    "packages/shared",
-    "storefront-frontend",
-    "storefront-discord"
+    "packages/*",
+    "apps/*"
   ],
   "type": "module",
   "scripts": {
@@ -14,9 +13,9 @@
     "build": "npm run build --workspaces",
     "typecheck": "npm run typecheck --workspaces",
     "test": "npm run test --workspaces --if-present",
-    "lint": "oxlint --deny-warnings storefront-frontend storefront-discord packages",
-    "format": "oxfmt --write storefront-frontend storefront-discord packages package.json tsconfig.base.json .oxlintrc.json .oxfmtrc.json",
-    "format:check": "oxfmt --check storefront-frontend storefront-discord packages package.json tsconfig.base.json .oxlintrc.json .oxfmtrc.json"
+    "lint": "oxlint --deny-warnings apps packages",
+    "format": "oxfmt --write apps packages package.json tsconfig.base.json .oxlintrc.json .oxfmtrc.json",
+    "format:check": "oxfmt --check apps packages package.json tsconfig.base.json .oxlintrc.json .oxfmtrc.json"
   },
   "devDependencies": {
     "@types/node": "^24.13.4",

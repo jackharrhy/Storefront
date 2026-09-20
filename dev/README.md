@@ -115,7 +115,7 @@ CI builds and tests the plugin and all three JavaScript workspaces on pushes and
 
 To release, update the version in `pom.xml`, then publish a GitHub Release for that commit’s tag. CI tests the tagged code and attaches the JAR to the release after both jobs pass, including for pre-releases. The tag must include this workflow. Re-running the release job replaces the attachment.
 
-The Docker publishing workflow runs only on `master` and uses the existing Docker Hub secrets.
+The Docker publishing workflow runs only on `main` and uses the existing Docker Hub secrets.
 
 ## Refresh scheduling and stress testing
 

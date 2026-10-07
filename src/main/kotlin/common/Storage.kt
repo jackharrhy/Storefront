@@ -74,9 +74,12 @@ class Storage(fileName: String) {
     fun newStorefront(owner: Owner, location: String, contents: String, description: Array<String>): Boolean =
         jdbi.withHandle<Boolean, RuntimeException> { handle ->
             handle.createUpdate("""
-                INSERT OR REPLACE INTO chest (id, owner, location, contents, modified, description)
+                INSERT INTO chest (id, owner, location, contents, modified, description)
                 VALUES ((SELECT id FROM chest WHERE location = :location),
                     :owner, :location, :contents, :modified, :description)
+                ON CONFLICT(id) DO UPDATE SET owner = excluded.owner, contents = excluded.contents,
+                    modified = excluded.modified, description = excluded.description
+                WHERE json_extract(chest.owner, '$.uuid') = json_extract(excluded.owner, '$.uuid')
             """.trimIndent())
                 .bind("owner", gson.toJson(owner))
                 .bind("location", location)

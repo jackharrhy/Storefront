@@ -28,3 +28,7 @@ dev/reports/catalog-*.png
 
 packages/*/dist/
 node_modules/
+
+fabric/.gradle/
+fabric/build/
+fabric/logs/

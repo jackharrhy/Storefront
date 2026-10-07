@@ -35,6 +35,19 @@ class StorageTest {
     }
 
     @Test
+    fun `saving an existing listing cannot replace another owner's data`() {
+        val storage = Storage(directory.resolve("protected.db").toString())
+        val location = "world:1.0:64.0:2.0"
+        assertTrue(storage.newStorefront(Owner("alice", "Alice"), location, "[null]", arrayOf("Original")))
+        val original = storage.allContents.single()
+        assertFalse(storage.newStorefront(Owner("bob", "Bob"), location, "[]", arrayOf("Stolen")))
+        assertEquals(original, storage.allContents.single())
+        assertTrue(storage.newStorefront(Owner("alice", "Alice"), location, "[]", arrayOf("Updated")))
+        assertEquals(original.id, storage.allContents.single().id)
+        assertEquals("Updated", storage.allContents.single().description.asJsonArray[0].asString)
+    }
+
+    @Test
     fun `ownership checks the UUID stored with the listing`() {
         val database = directory.resolve("owners.db").toString()
         val storage = Storage(database)

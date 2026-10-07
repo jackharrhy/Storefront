@@ -1,0 +1,1 @@
+{"schemaVersion":1,"id":"storefront-smoke","version":"1","environment":"server","entrypoints":{"main":["com.jackharrhy.storefront.fabric.StorefrontSmoke"]},"depends":{"fabric-api":"*"}}

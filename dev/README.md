@@ -134,7 +134,10 @@ It starts both real web apps in one classloader, in both jar orders, and checks
 Storefront SQLite/JSON/map routes plus ItemSorter static files, authorized
 Thymeleaf rendering, save and replay rejection. Reflection follows each shipped
 API's relocated parameter types rather than compiling a fixture against original
-library names. Only Minecraft-owned Gson/SLF4J come from the Gradle cache; a
+library names. Append AudioPlayer's runtime jar as an optional third argument to
+put its colliding `web/index.html` first on the classpath. ItemSorter's root must
+be Hopper Configuration (not merely any HTML); CSS and block icons must also
+load. Both root and context-prefixed ItemSorter URLs are checked. Only Minecraft-owned Gson/SLF4J come from the Gradle cache; a
 missing standalone SLF4J provider produces harmless logging warnings. Packaging
 checks reject exposed conflicting libraries and missing service providers.
 

@@ -21,6 +21,7 @@ public class CombinedWebClasspath {
             throw new AssertionError(path + ": " + response.statusCode() + " " + response.body());
     }
     public static void main(String[] args) throws Exception {
+        String contextPath = args.length == 0 ? "/sorter" : args[0];
         Object storefront = null, sorter = null;
         Path db = Files.createTempFile(Path.of(System.getenv("TMPDIR")), "combined-web-", ".sqlite");
         try (HttpClient client = HttpClient.newHttpClient()) {
@@ -39,7 +40,7 @@ public class CombinedWebClasspath {
             String javalinName = configure.getParameterTypes()[0].getName().replace("core.JavalinConfig", "Javalin");
             Class<?> javalin = Class.forName(javalinName);
             sorter = javalin.getMethod("create", Consumer.class).invoke(null, (Consumer<Object>) config -> {
-                try { configure.invoke(null, config, "/sorter"); }
+                try { configure.invoke(null, config, contextPath); }
                 catch (ReflectiveOperationException e) { throw new RuntimeException(e); }
             });
             Method register = Arrays.stream(editor.getMethods()).filter(m -> m.getName().equals("registerEditor")).findFirst().orElseThrow();
@@ -64,11 +65,13 @@ public class CombinedWebClasspath {
                 throw new AssertionError("Apps must share a classloader");
             check(client, storefront, "/storefronts/", null, 200, "[]");
             check(client, storefront, "/storefronts/1/item/0/map", null, 200, "\"map\":true");
-            check(client, sorter, "/sorter/", null, 200, "html");
-            check(client, sorter, "/sorter/editor", null, 403, "fresh link");
-            check(client, sorter, "/sorter/editor?token=" + token, null, 200, token);
-            check(client, sorter, "/sorter/save", "token=" + token, 200, "Thank you");
-            check(client, sorter, "/sorter/save", "token=" + token, 403, "fresh link");
+            check(client, sorter, contextPath + "/", null, 200, "<title>Hopper Configuration</title>");
+            check(client, sorter, contextPath + "/css/page.css", null, 200, "font-family");
+            check(client, sorter, contextPath + "/images/block/stone.png", null, 200, "PNG");
+            check(client, sorter, contextPath + "/editor", null, 403, "fresh link");
+            check(client, sorter, contextPath + "/editor?token=" + token, null, 200, token);
+            check(client, sorter, contextPath + "/save", "token=" + token, 200, "Thank you");
+            check(client, sorter, contextPath + "/save", "token=" + token, 403, "fresh link");
             System.out.println("PASS: both shipped web apps in one classloader; Storefront JSON/map, ItemSorter static/Thymeleaf/save/replay");
         } finally {
             if (sorter != null) call(sorter, "stop", new Class<?>[0]);

@@ -39,7 +39,11 @@ shadowJar {
     configurations = [project.configurations.bundled]
     dependencies { exclude(dependency('org.slf4j:.*:.*')); exclude(dependency('com.google.code.gson:.*:.*')) }
     exclude 'META-INF/*.SF', 'META-INF/*.RSA', 'META-INF/*.DSA', 'module-info.class', 'META-INF/versions/*/module-info.class'
+    filesMatching('META-INF/services/**') { duplicatesStrategy = DuplicatesStrategy.INCLUDE }
     mergeServiceFiles()
+    relocate 'io.javalin', 'com.jackharrhy.storefront.internal.javalin'
+    relocate 'kotlin', 'com.jackharrhy.storefront.internal.kotlin'
+    relocate 'jakarta.servlet', 'com.jackharrhy.storefront.internal.servlet'
     relocate 'org.objectweb.asm', 'com.jackharrhy.storefront.internal.asm'
     relocate 'org.eclipse.jetty', 'com.jackharrhy.storefront.internal.jetty'
     manifest { attributes 'Multi-Release': 'true' }

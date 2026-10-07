@@ -117,7 +117,26 @@ Build with `./fabric/gradlew -p fabric build smokeJar`. Maven and Gradle compile
 `src/main/kotlin/common` for the shared SQLite schema, HTTP routes and refresh
 primitives. Paper retains its existing events and item serializer; Fabric owns
 its vanilla sign-edit mixin, world snapshots, scheduling and shutdown. Dependencies
-are bundled, excluding Minecraft-owned Gson/SLF4J; ASM and Jetty are relocated.
+are bundled, excluding Minecraft-owned Gson/SLF4J. Javalin, Kotlin, Jetty,
+servlet and ASM packages are private to the mod; service descriptors are merged
+and relocated with their providers.
+
+For a fast combined-classpath HTTP regression against ItemSorter Fabric, build
+both runtime jars and run from this repository (no Minecraft server or world):
+
+```sh
+python dev/combined-web-classpath.py \
+  fabric/build/libs/storefront-fabric-2.0-SNAPSHOT.jar \
+  /path/to/ItemSorter/fabric/build/libs/ItemSorter-Fabric-26.2.jar
+```
+
+It starts both real web apps in one classloader, in both jar orders, and checks
+Storefront SQLite/JSON/map routes plus ItemSorter static files, authorized
+Thymeleaf rendering, save and replay rejection. Reflection follows each shipped
+API's relocated parameter types rather than compiling a fixture against original
+library names. Only Minecraft-owned Gson/SLF4J come from the Gradle cache; a
+missing standalone SLF4J provider produces harmless logging warnings. Packaging
+checks reject exposed conflicting libraries and missing service providers.
 
 The split borrows only small patterns from genuine dual-platform projects:
 [Simple Voice Chat](https://github.com/henkelmax/simple-voice-chat/blob/master/settings.gradle)

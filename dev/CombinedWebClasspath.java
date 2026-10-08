@@ -23,7 +23,7 @@ public class CombinedWebClasspath {
     public static void main(String[] args) throws Exception {
         String contextPath = args.length == 0 ? "/sorter" : args[0];
         Object storefront = null, sorter = null;
-        Path db = Files.createTempFile(Path.of(System.getenv("TMPDIR")), "combined-web-", ".sqlite");
+        Path db = Files.createTempFile(Path.of(System.getenv().getOrDefault("TMPDIR", System.getProperty("java.io.tmpdir"))), "combined-web-", ".sqlite");
         try (HttpClient client = HttpClient.newHttpClient()) {
             Class<?> storageType = Class.forName("com.jackharrhy.storefront.Storage");
             Object storage = storageType.getConstructor(String.class).newInstance(db.toString());
@@ -32,6 +32,17 @@ public class CombinedWebClasspath {
             Class<?> function = create.getParameterTypes()[1];
             Object maps = Proxy.newProxyInstance(function.getClassLoader(), new Class<?>[]{function},
                 (proxy, method, values) -> CompletableFuture.completedFuture("{\"map\":true}"));
+            Class<?> ownerType = Class.forName("com.jackharrhy.storefront.Owner");
+            Object alice = ownerType.getConstructor(String.class, String.class).newInstance("alice", "Alice");
+            Object bob = ownerType.getConstructor(String.class, String.class).newInstance("bob", "Bob");
+            Class<?>[] saveTypes = {ownerType, String.class, String.class, String[].class};
+            String location = "world:1.0:64.0:2.0";
+            if (!(Boolean) call(storage, "newStorefront", saveTypes, alice, location, "[null]", new String[]{"Original"})
+                || (Boolean) call(storage, "newStorefront", saveTypes, bob, location, "[]", new String[]{"Stolen"})
+                || !(Boolean) call(storage, "newStorefront", saveTypes, alice, location, "[]", new String[]{"Updated"}))
+                throw new AssertionError("Listing owner protection failed");
+            // Reopen the shipped storage implementation before serving the persisted listing.
+            storage = storageType.getConstructor(String.class).newInstance(db.toString());
             storefront = create.invoke(null, storage, maps);
             call(storefront, "start", new Class<?>[]{String.class, int.class}, "127.0.0.1", 0);
 
@@ -63,7 +74,11 @@ public class CombinedWebClasspath {
             call(sorter, "start", new Class<?>[]{String.class, int.class}, "127.0.0.1", 0);
             if (storefront.getClass().getClassLoader() != sorter.getClass().getClassLoader())
                 throw new AssertionError("Apps must share a classloader");
-            check(client, storefront, "/storefronts/", null, 200, "[]");
+            check(client, storefront, "/storefronts/", null, 200, "\"name\":\"Alice\"");
+            check(client, storefront, "/storefronts/1", null, 200, "Updated");
+            check(client, storefront, "/storefronts/999", null, 404, "Storefront not found");
+            check(client, storefront, "/storefronts/invalid", null, 400, "Invalid storefront ID");
+            check(client, storefront, "/storefronts/1/item/-1/map", null, 400, "Invalid item position");
             check(client, storefront, "/storefronts/1/item/0/map", null, 200, "\"map\":true");
             check(client, sorter, contextPath + "/", null, 200, "<title>Hopper Configuration</title>");
             check(client, sorter, contextPath + "/css/page.css", null, 200, "font-family");

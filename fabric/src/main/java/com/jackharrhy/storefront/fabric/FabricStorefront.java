@@ -3,6 +3,11 @@ package com.jackharrhy.storefront.fabric;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.jackharrhy.storefront.Owner;
+import com.jackharrhy.storefront.ListingKt;
+import com.jackharrhy.storefront.ListingLocation;
+import com.jackharrhy.storefront.ItemSnapshot;
+import com.jackharrhy.storefront.MapSnapshot;
+import com.jackharrhy.storefront.MapScale;
 import com.jackharrhy.storefront.Storage;
 import com.jackharrhy.storefront.WebApiKt;
 import com.mojang.serialization.JsonOps;
@@ -17,7 +22,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -114,19 +118,18 @@ public final class FabricStorefront implements ModInitializer {
     }
 
     static boolean isListing(SignBlockEntity sign) {
-        return sign.getFrontText().getMessage(0, false).getString().equalsIgnoreCase("[storefront]");
+        return ListingKt.isStorefrontSign(sign.getFrontText().getMessage(0, false).getString());
     }
 
     static String location(ServerLevel world, BlockPos pos) {
         String name = instance.config.worldName(world.dimension().identifier().toString());
-        return name + ":" + (double) pos.getX() + ":" + (double) pos.getY() + ":" + (double) pos.getZ();
+        return new ListingLocation(name, pos.getX(), pos.getY(), pos.getZ()).serialize();
     }
 
     public boolean mayEdit(Player player, SignBlockEntity sign) {
         var pos = chestPosition(sign);
         if (pos == null || storage == null) return true;
-        var owner = storage.ownerUUID(location((ServerLevel) sign.getLevel(), pos));
-        return owner == null || owner.equals(player.getUUID().toString());
+        return storage.mayEdit(player.getUUID().toString(), location((ServerLevel) sign.getLevel(), pos));
     }
 
     public void save(Player player, SignBlockEntity sign) {
@@ -145,15 +148,10 @@ public final class FabricStorefront implements ModInitializer {
     record Located(ServerLevel world, BlockPos pos) {}
 
     Located locate(MinecraftServer server, String serialized) {
-        int zStart = serialized.lastIndexOf(':');
-        int yStart = serialized.lastIndexOf(':', zStart - 1);
-        int xStart = serialized.lastIndexOf(':', yStart - 1);
-        if (xStart < 0) throw new IllegalArgumentException("Invalid storefront location: " + serialized);
-        String name = serialized.substring(0, xStart);
-        var pos = BlockPos.containing(Double.parseDouble(serialized.substring(xStart + 1, yStart)),
-            Double.parseDouble(serialized.substring(yStart + 1, zStart)), Double.parseDouble(serialized.substring(zStart + 1)));
+        var location = ListingLocation.parse(serialized);
+        var pos = BlockPos.containing(location.getX(), location.getY(), location.getZ());
         for (var world : server.getAllLevels()) {
-            if (config.worldName(world.dimension().identifier().toString()).equals(name)) return new Located(world, pos);
+            if (config.worldName(world.dimension().identifier().toString()).equals(location.getWorld())) return new Located(world, pos);
         }
         return null;
     }
@@ -173,9 +171,8 @@ public final class FabricStorefront implements ModInitializer {
                 var map = MapItem.getSavedData(inventory.getItem(slot), target.world());
                 if (map == null) throw new NotFoundResponse("Map not found");
                 String[] scales = { "CLOSEST", "CLOSE", "NORMAL", "FAR", "FARTHEST" };
-                result.complete(GSON.toJson(Map.of("world", config.worldName(map.dimension.identifier().toString()),
-                    "centerX", map.centerX, "centerZ", map.centerZ,
-                    "scale", Map.of("name", scales[map.scale], "ordinal", map.scale))));
+                result.complete(GSON.toJson(new MapSnapshot(config.worldName(map.dimension.identifier().toString()),
+                    map.centerX, map.centerZ, new MapScale(scales[map.scale], map.scale))));
             } catch (Exception error) { result.completeExceptionally(error); }
         });
         return result;
@@ -204,10 +201,6 @@ public final class FabricStorefront implements ModInitializer {
         for (int i = 0; i < inventory.getContainerSize(); i++) {
             var stack = inventory.getItem(i);
             if (stack.isEmpty()) { items.add(null); continue; }
-            var item = new LinkedHashMap<String, Object>();
-            item.put("name", stack.getHoverName().getString());
-            item.put("key", BuiltInRegistries.ITEM.getKey(stack.getItem()).toString());
-            item.put("amount", stack.getCount());
             var meta = new LinkedHashMap<String, Object>();
             meta.put("damage", stack.getDamageValue());
             var jsonOps = world.registryAccess().createSerializationContext(JsonOps.INSTANCE);
@@ -220,10 +213,9 @@ public final class FabricStorefront implements ModInitializer {
                 NbtIo.writeCompressed(tag, bytes);
                 meta.put("internal", Base64.getEncoder().encodeToString(bytes.toByteArray()));
             } catch (IOException error) { throw new UncheckedIOException(error); }
-            item.put("meta", meta);
-            item.put("isBlock", stack.getItem() instanceof BlockItem);
-            item.put("maxDurability", stack.getMaxDamage());
-            items.add(item);
+            items.add(new ItemSnapshot(stack.getHoverName().getString(),
+                BuiltInRegistries.ITEM.getKey(stack.getItem()).toString(), stack.getCount(), GSON.toJsonTree(meta),
+                stack.getItem() instanceof BlockItem, stack.getMaxDamage()));
         }
         return GSON.toJson(items);
     }

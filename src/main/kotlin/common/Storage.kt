@@ -71,6 +71,9 @@ class Storage(fileName: String) {
             .mapTo(String::class.java).findFirst().orElse(null)
     }
 
+    fun mayEdit(ownerUuid: String, location: String): Boolean =
+        ownerUUID(location).let { it == null || it == ownerUuid }
+
     fun newStorefront(owner: Owner, location: String, contents: String, description: Array<String>): Boolean =
         jdbi.withHandle<Boolean, RuntimeException> { handle ->
             handle.createUpdate("""
@@ -89,16 +92,18 @@ class Storage(fileName: String) {
                 .execute() == 1
         }
 
-    fun updateStorefront(location: String, contents: String, description: Array<String>): Boolean =
+    fun updateStorefront(ownerUuid: String, location: String, contents: String, description: Array<String>): Boolean =
         jdbi.withHandle<Boolean, RuntimeException> { handle ->
             handle.createUpdate("""
                 UPDATE chest SET contents = :contents, modified = :modified, description = :description
                 WHERE id = (SELECT id FROM chest WHERE location = :location)
+                    AND json_extract(owner, '$.uuid') = :ownerUuid
             """.trimIndent())
                 .bind("location", location)
                 .bind("contents", contents)
                 .bind("modified", nextModified())
                 .bind("description", gson.toJson(description))
+                .bind("ownerUuid", ownerUuid)
                 .execute() == 1
         }
 

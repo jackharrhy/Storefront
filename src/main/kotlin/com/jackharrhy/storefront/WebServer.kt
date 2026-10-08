@@ -30,7 +30,7 @@ class WebServer(private val plugin: Storefront, private val storage: Storage) {
             try {
                 val location = deserializeLocation(serializedLocation)
                 val world = location.world ?: throw NotFoundResponse("World not found")
-                if (!world.isChunkLoaded(location.blockX shr 4, location.blockZ shr 4)) {
+                if (!chestChunksLoaded(location)) {
                     throw NotFoundResponse("Chest chunk is not loaded")
                 }
                 val chest = world.getBlockAt(location).state as? Chest
@@ -38,12 +38,8 @@ class WebServer(private val plugin: Storefront, private val storage: Storage) {
                 if (position !in 0 until chest.inventory.size) throw BadRequestResponse("Invalid item position")
                 val meta = chest.inventory.getItem(position)?.itemMeta as? MapMeta
                 val map = meta?.mapView ?: throw NotFoundResponse("Map not found")
-                result.complete(Gson().toJson(mapOf(
-                    "world" to map.world?.name,
-                    "centerX" to map.centerX,
-                    "centerZ" to map.centerZ,
-                    "scale" to mapOf("name" to map.scale.name, "ordinal" to map.scale.ordinal)
-                )))
+                result.complete(Gson().toJson(MapSnapshot(map.world?.name, map.centerX, map.centerZ,
+                    MapScale(map.scale.name, map.scale.ordinal))))
             } catch (exception: Exception) {
                 result.completeExceptionally(exception)
             }

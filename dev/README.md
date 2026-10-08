@@ -114,8 +114,8 @@ The optional Discord screenshot bot uses TypeScript, Node 24, discord.js 14, and
 ## Fabric smoke test
 
 Build with `./fabric/gradlew -p fabric build smokeJar`. Maven and Gradle compile
-`src/main/kotlin/common` for the shared SQLite schema, HTTP routes and refresh
-primitives. Paper retains its existing events and item serializer; Fabric owns
+`src/main/kotlin/common` for the shared SQLite schema, owner policy, HTTP routes, persisted location/JSON
+contracts and complete refresh lifecycle (budgets, async writes, draining and shutdown). Paper retains its events and item/component translation; Fabric owns
 its vanilla sign-edit mixin, world snapshots, scheduling and shutdown. Dependencies
 are bundled, excluding Minecraft-owned Gson/SLF4J. Javalin, Kotlin, Jetty,
 servlet and ASM packages are private to the mod; service descriptors are merged
@@ -131,7 +131,7 @@ python dev/combined-web-classpath.py \
 ```
 
 It starts both real web apps in one classloader, in both jar orders, and checks
-Storefront SQLite/JSON/map routes plus ItemSorter static files, authorized
+Storefront owner-protected persistence/reopen and JSON/map routes plus ItemSorter static files, authorized
 Thymeleaf rendering, save and replay rejection. Reflection follows each shipped
 API's relocated parameter types rather than compiling a fixture against original
 library names. Append AudioPlayer's runtime jar as an optional third argument to

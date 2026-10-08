@@ -10,7 +10,7 @@ loom { serverOnlyMinecraftJar() }
 sourceSets {
     main.kotlin.srcDir '../src/main/kotlin/common'
     test.kotlin.srcDir '../src/test/kotlin'
-    test.kotlin.exclude '**/ItemSerializationTest.kt'
+    test.kotlin.exclude '**/ItemSerializationTest.kt', '**/PaperChestTest.kt'
     smoke {
         compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
         runtimeClasspath += output + compileClasspath }

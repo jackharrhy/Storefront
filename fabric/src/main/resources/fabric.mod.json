@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "id": "storefront",
+  "version": "${version}",
+  "name": "Storefront",
+  "environment": "server",
+  "entrypoints": { "main": ["com.jackharrhy.storefront.fabric.FabricStorefront"] },
+  "mixins": ["storefront.mixins.json"],
+  "depends": { "fabricloader": ">=0.19.5", "minecraft": "26.2", "java": ">=25", "fabric-api": ">=0.161.0+26.2" }
+}

@@ -15,11 +15,11 @@ import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
 
 fun serializeLocation(location: Location): String =
-    "${requireNotNull(location.world).name}:${location.x}:${location.y}:${location.z}"
+    ListingLocation(requireNotNull(location.world).name, location.x, location.y, location.z).serialize()
 
 fun deserializeLocation(value: String): Location {
-    val (world, x, y, z) = value.split(":")
-    return Location(Bukkit.getWorld(world), x.toDouble(), y.toDouble(), z.toDouble())
+    val (world, x, y, z) = ListingLocation.parse(value)
+    return Location(Bukkit.getWorld(world), x, y, z)
 }
 
 fun signDescription(sign: Sign): Array<String> = sign.getSide(Side.FRONT).lines()
@@ -82,6 +82,7 @@ class Storefront : JavaPlugin() {
     }
 
     fun newStorefront(player: Player, chest: Chest, sign: Sign): Boolean {
+        if (!chestChunksLoaded(chest.location)) return false
         if (storage.ownerUUID(serializeLocation(chest.location)) != null) return updateStorefront(player, chest, sign)
         val created = storage.newStorefront(
             Owner(player.uniqueId.toString(), player.name),
@@ -102,8 +103,9 @@ class Storefront : JavaPlugin() {
             player.sendMessage(Component.text("This isn't your storefront!", NamedTextColor.RED))
             return false
         }
+        if (!chestChunksLoaded(chest.location)) return false
         val updated = storage.updateStorefront(
-            serializeLocation(chest.location), inventoryToJsonString(chest.inventory), signDescription(sign)
+            player.uniqueId.toString(), serializeLocation(chest.location), inventoryToJsonString(chest.inventory), signDescription(sign)
         )
         player.sendMessage(Component.text(
             if (updated) "Storefront updated" else "Failed to update storefront",

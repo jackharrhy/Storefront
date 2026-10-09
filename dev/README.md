@@ -4,7 +4,7 @@ Build, configuration, and test details for [Storefront](../README.md). Run comma
 
 ## Runtime and compatibility
 
-Storefront uses Java 26, Paper 26.2, Kotlin 2.4, Javalin 7, React 19, and Vite 8. Servers running the original Java 8 / Paper 1.15.2 version need a runtime upgrade. The SQLite table and saved inventory JSON remain compatible. API responses include each storefront's database ID.
+Storefront targets Java 25+ (build with Java 26), Paper/Fabric 26.2, Kotlin 2.4, Javalin 7, React 19, and Vite 8. Servers running the original Java 8 / Paper 1.15.2 version need a runtime upgrade. The SQLite table and saved inventory JSON remain compatible. API responses include each storefront's database ID.
 
 ## Build the plugin
 
@@ -111,11 +111,77 @@ The frontend's nginx proxy targets `paper:7000` in Compose. For standalone hosti
 
 The optional Discord screenshot bot uses TypeScript, Node 24, discord.js 14, and Puppeteer 25. It shares storefront types and URL options with the frontend through `@storefront/shared`. See [Discord setup and screenshot checks](../apps/discord/README.md).
 
-CI builds and tests the plugin and all three JavaScript workspaces on pushes and pull requests. Each run saves the installable JAR (including its dependencies) as the `storefront-plugin` Actions artifact.
+## Fabric smoke test
 
-To release, update the version in `pom.xml`, then publish a GitHub Release for that commit’s tag. CI tests the tagged code and attaches the JAR to the release after both jobs pass, including for pre-releases. The tag must include this workflow. Re-running the release job replaces the attachment.
+Build with `./fabric/gradlew -p fabric build smokeJar`. Maven and Gradle compile
+`src/main/kotlin/common` for the shared SQLite schema, owner policy, HTTP routes, persisted location/JSON
+contracts and complete refresh lifecycle (budgets, async writes, draining and shutdown). Paper retains its events and item/component translation; Fabric owns
+its vanilla sign-edit mixin, world snapshots, scheduling and shutdown. Dependencies
+are bundled, excluding Minecraft-owned Gson/SLF4J. Javalin, Kotlin, Jetty,
+servlet and ASM packages are private to the mod; service descriptors are merged
+and relocated with their providers.
 
-The Docker publishing workflow runs only on `main` and uses the existing Docker Hub secrets.
+For a fast combined-classpath HTTP regression against ItemSorter Fabric, build
+both runtime jars and run from this repository (no Minecraft server or world):
+
+```sh
+python dev/combined-web-classpath.py \
+  fabric/build/libs/storefront-fabric-2.0-SNAPSHOT.jar \
+  /path/to/ItemSorter/fabric/build/libs/ItemSorter-Fabric-26.2.jar
+```
+
+It starts both real web apps in one classloader, in both jar orders, and checks
+Storefront owner-protected persistence/reopen and JSON/map routes plus ItemSorter static files, authorized
+Thymeleaf rendering, save and replay rejection. Reflection follows each shipped
+API's relocated parameter types rather than compiling a fixture against original
+library names. Append AudioPlayer's runtime jar as an optional third argument to
+put its colliding `web/index.html` first on the classpath. ItemSorter's root must
+be Hopper Configuration (not merely any HTML); CSS and block icons must also
+load. Both root and context-prefixed ItemSorter URLs are checked. Only Minecraft-owned Gson/SLF4J come from the Gradle cache; a
+missing standalone SLF4J provider produces harmless logging warnings. Packaging
+checks reject exposed conflicting libraries and missing service providers.
+
+The split borrows only small patterns from genuine dual-platform projects:
+[Simple Voice Chat](https://github.com/henkelmax/simple-voice-chat/blob/master/settings.gradle)
+separates common behavior from loader entrypoints;
+[BlueMap](https://github.com/BlueMap-Minecraft/BlueMap/tree/master/implementations)
+builds separate platform artifacts and excludes host-owned libraries;
+[LuckPerms](https://github.com/LuckPerms/LuckPerms/tree/master/fabric)
+keeps platform events and resource lifecycle outside shared storage. Storefront
+has no platform factory or generic compatibility framework.
+
+Download a Fabric server launcher for **26.2 / Loader 0.19.5 / Installer 1.1.2**,
+Fabric API **0.161.0+26.2**, and Mojang's **26.2** server JAR into your scratch
+workspace. The CI workflow contains exact URLs and verified game/API checksums.
+Run, replacing paths with those local downloads:
+
+```sh
+python dev/fabric-smoke.py --workspace "$TMPDIR" \
+  --launcher "$TMPDIR/fabric-launch.jar" \
+  --fabric-api "$TMPDIR/fabric-api.jar" \
+  --minecraft "$TMPDIR/minecraft.jar" --accept-eula
+```
+
+The runner always creates a new test directory, binds game/HTTP to
+`127.0.0.1:25675` / `127.0.0.1:8765`, and stops only its own child processes.
+It seeds a legacy-schema test listing, edits real world signs, invokes the
+registered interaction/break callbacks, checks ownership and administrator
+restrictions, snapshots nested metadata and maps over HTTP, exercises bounded
+refreshes and unloaded double-chest neighbors, then restarts to check persistence.
+Logs and artifact hashes remain in that test directory. Never install its separate
+`smoke` JAR on a real server: it intentionally creates fixture blocks.
+These are server-side lifecycle tests with synthetic players, not packet/client
+tests. Mineflayer 4.39.0 rejects protocol 26.2; an actual vanilla-client join,
+sign editing and breaking still need in-game verification. No production data,
+deployment or running production server is involved.
+
+CI builds and tests both server artifacts and all three JavaScript workspaces on
+pushes and pull requests. It also runs the isolated Fabric lifecycle/restart test.
+The installable JARs are saved as `storefront-plugin` and `storefront-fabric`.
+
+To release, update the version in `pom.xml`, then publish a GitHub Release targeting `main` for that commit’s tag. Fabric reads the version from `pom.xml`. CI tests the tagged code and attaches both JARs after all jobs pass, including for pre-releases. The tag must include this workflow. Re-running the release job replaces the attachment.
+
+Docker publishing uses GHCR and `GITHUB_TOKEN`, only for `main` or releases targeting `main`. Feature-branch manual dispatches build without publishing.
 
 ## Refresh scheduling and stress testing
 

@@ -71,12 +71,18 @@ class Storage(fileName: String) {
             .mapTo(String::class.java).findFirst().orElse(null)
     }
 
+    fun mayEdit(ownerUuid: String, location: String): Boolean =
+        ownerUUID(location).let { it == null || it == ownerUuid }
+
     fun newStorefront(owner: Owner, location: String, contents: String, description: Array<String>): Boolean =
         jdbi.withHandle<Boolean, RuntimeException> { handle ->
             handle.createUpdate("""
-                INSERT OR REPLACE INTO chest (id, owner, location, contents, modified, description)
+                INSERT INTO chest (id, owner, location, contents, modified, description)
                 VALUES ((SELECT id FROM chest WHERE location = :location),
                     :owner, :location, :contents, :modified, :description)
+                ON CONFLICT(id) DO UPDATE SET owner = excluded.owner, contents = excluded.contents,
+                    modified = excluded.modified, description = excluded.description
+                WHERE json_extract(chest.owner, '$.uuid') = json_extract(excluded.owner, '$.uuid')
             """.trimIndent())
                 .bind("owner", gson.toJson(owner))
                 .bind("location", location)
@@ -86,16 +92,18 @@ class Storage(fileName: String) {
                 .execute() == 1
         }
 
-    fun updateStorefront(location: String, contents: String, description: Array<String>): Boolean =
+    fun updateStorefront(ownerUuid: String, location: String, contents: String, description: Array<String>): Boolean =
         jdbi.withHandle<Boolean, RuntimeException> { handle ->
             handle.createUpdate("""
                 UPDATE chest SET contents = :contents, modified = :modified, description = :description
                 WHERE id = (SELECT id FROM chest WHERE location = :location)
+                    AND json_extract(owner, '$.uuid') = :ownerUuid
             """.trimIndent())
                 .bind("location", location)
                 .bind("contents", contents)
                 .bind("modified", nextModified())
                 .bind("description", gson.toJson(description))
+                .bind("ownerUuid", ownerUuid)
                 .execute() == 1
         }
 

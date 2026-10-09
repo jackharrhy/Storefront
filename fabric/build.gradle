@@ -1,0 +1,52 @@
+plugins {
+    id 'net.fabricmc.fabric-loom' version '1.18.2'
+    id 'org.jetbrains.kotlin.jvm' version '2.4.20'
+    id 'com.gradleup.shadow' version '9.4.0'
+}
+version = new groovy.xml.XmlSlurper().parse(file('../pom.xml')).version.text()
+group = 'com.jackharrhy.storefront'
+repositories { mavenCentral() }
+loom { serverOnlyMinecraftJar() }
+sourceSets {
+    main.kotlin.srcDir '../src/main/kotlin/common'
+    test.kotlin.srcDir '../src/test/kotlin'
+    test.kotlin.exclude '**/ItemSerializationTest.kt', '**/PaperChestTest.kt'
+    smoke {
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath += output + compileClasspath }
+}
+configurations { bundled; implementation.extendsFrom bundled }
+dependencies {
+    minecraft 'com.mojang:minecraft:26.2'
+    implementation 'net.fabricmc:fabric-loader:0.19.5'
+    implementation 'net.fabricmc.fabric-api:fabric-api:0.161.0+26.2'
+    bundled 'org.jetbrains.kotlin:kotlin-stdlib:2.4.20'
+    bundled 'io.javalin:javalin:7.2.3'
+    bundled 'org.jdbi:jdbi3-core:3.54.0'
+    bundled 'org.xerial:sqlite-jdbc:3.53.4.0'
+    bundled 'org.yaml:snakeyaml:2.6'
+    testImplementation 'org.junit.jupiter:junit-jupiter:6.0.3'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:6.0.3'
+}
+java { sourceCompatibility = JavaVersion.VERSION_25; targetCompatibility = JavaVersion.VERSION_25 }
+kotlin { compilerOptions { jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_25 } }
+tasks.withType(JavaCompile).configureEach { options.release = 25 }
+test { useJUnitPlatform(); jvmArgs '--enable-native-access=ALL-UNNAMED' }
+processResources { inputs.property 'version', project.version; filesMatching('fabric.mod.json') { expand version: project.version } }
+jar { archiveClassifier = 'thin' }
+shadowJar {
+    archiveClassifier = ''
+    configurations = [project.configurations.bundled]
+    dependencies { exclude(dependency('org.slf4j:.*:.*')); exclude(dependency('com.google.code.gson:.*:.*')) }
+    exclude 'META-INF/*.SF', 'META-INF/*.RSA', 'META-INF/*.DSA', 'module-info.class', 'META-INF/versions/*/module-info.class'
+    filesMatching('META-INF/services/**') { duplicatesStrategy = DuplicatesStrategy.INCLUDE }
+    mergeServiceFiles()
+    relocate 'io.javalin', 'com.jackharrhy.storefront.internal.javalin'
+    relocate 'kotlin', 'com.jackharrhy.storefront.internal.kotlin'
+    relocate 'jakarta.servlet', 'com.jackharrhy.storefront.internal.servlet'
+    relocate 'org.objectweb.asm', 'com.jackharrhy.storefront.internal.asm'
+    relocate 'org.eclipse.jetty', 'com.jackharrhy.storefront.internal.jetty'
+    manifest { attributes 'Multi-Release': 'true' }
+}
+tasks.register('smokeJar', Jar) { archiveClassifier = 'smoke'; from sourceSets.smoke.output }
+build.dependsOn shadowJar

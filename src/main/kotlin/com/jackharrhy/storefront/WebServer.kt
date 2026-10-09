@@ -7,28 +7,6 @@ import io.javalin.http.NotFoundResponse
 import org.bukkit.block.Chest
 import org.bukkit.inventory.meta.MapMeta
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
-
-internal fun createWebApp(storage: Storage, mapContents: (Int, Int) -> CompletableFuture<String>): Javalin {
-    val gson = Gson()
-    return Javalin.create { config ->
-        config.routes.before { ctx -> ctx.contentType("application/json") }
-        config.routes.get("/storefronts/") { ctx ->
-            ctx.result(gson.toJson(storage.allContents))
-        }
-        config.routes.get("/storefronts/{id}") { ctx ->
-            val id = ctx.pathParam("id").toIntOrNull() ?: throw BadRequestResponse("Invalid storefront ID")
-            val contents = storage.storefrontContentsById(id) ?: throw NotFoundResponse("Storefront not found")
-            ctx.result(gson.toJson(contents))
-        }
-        config.routes.get("/storefronts/{id}/item/{position}/map") { ctx ->
-            val id = ctx.pathParam("id").toIntOrNull() ?: throw BadRequestResponse("Invalid storefront ID")
-            val position = ctx.pathParam("position").toIntOrNull() ?: throw BadRequestResponse("Invalid item position")
-            if (position < 0) throw BadRequestResponse("Invalid item position")
-            ctx.future { mapContents(id, position).orTimeout(5, TimeUnit.SECONDS).thenAccept { ctx.result(it) } }
-        }
-    }
-}
 
 class WebServer(private val plugin: Storefront, private val storage: Storage) {
     private val app: Javalin
@@ -52,7 +30,7 @@ class WebServer(private val plugin: Storefront, private val storage: Storage) {
             try {
                 val location = deserializeLocation(serializedLocation)
                 val world = location.world ?: throw NotFoundResponse("World not found")
-                if (!world.isChunkLoaded(location.blockX shr 4, location.blockZ shr 4)) {
+                if (!chestChunksLoaded(location)) {
                     throw NotFoundResponse("Chest chunk is not loaded")
                 }
                 val chest = world.getBlockAt(location).state as? Chest
@@ -60,12 +38,8 @@ class WebServer(private val plugin: Storefront, private val storage: Storage) {
                 if (position !in 0 until chest.inventory.size) throw BadRequestResponse("Invalid item position")
                 val meta = chest.inventory.getItem(position)?.itemMeta as? MapMeta
                 val map = meta?.mapView ?: throw NotFoundResponse("Map not found")
-                result.complete(Gson().toJson(mapOf(
-                    "world" to map.world?.name,
-                    "centerX" to map.centerX,
-                    "centerZ" to map.centerZ,
-                    "scale" to mapOf("name" to map.scale.name, "ordinal" to map.scale.ordinal)
-                )))
+                result.complete(Gson().toJson(MapSnapshot(map.world?.name, map.centerX, map.centerZ,
+                    MapScale(map.scale.name, map.scale.ordinal))))
             } catch (exception: Exception) {
                 result.completeExceptionally(exception)
             }

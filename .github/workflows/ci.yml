@@ -22,6 +22,42 @@ jobs:
           name: storefront-plugin
           path: target/storefront-*.jar
           if-no-files-found: error
+  fabric:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '26'
+      - uses: gradle/actions/setup-gradle@v6
+      - run: ./fabric/gradlew -p fabric build smokeJar
+      - name: Isolated Fabric lifecycle and restart test
+        shell: bash
+        run: |
+          curl -fL --retry 2 'https://meta.fabricmc.net/v2/versions/loader/26.2/0.19.5/1.1.2/server/jar' -o "$RUNNER_TEMP/fabric-launch.jar"
+          curl -fL --retry 2 'https://maven.fabricmc.net/net/fabricmc/fabric-api/fabric-api/0.161.0+26.2/fabric-api-0.161.0+26.2.jar' -o "$RUNNER_TEMP/fabric-api.jar"
+          curl -fL --retry 2 'https://piston-data.mojang.com/v1/objects/823e2250d24b3ddac457a60c92a6a941943fcd6a/server.jar' -o "$RUNNER_TEMP/minecraft.jar"
+          printf '%s  %s\n' 'e5b858ceb13290c274e31cb888ff5a1a40cb91067e7ffab0b5b775aec51e216a' "$RUNNER_TEMP/fabric-api.jar" | sha256sum -c -
+          printf '%s  %s\n' '823e2250d24b3ddac457a60c92a6a941943fcd6a' "$RUNNER_TEMP/minecraft.jar" | sha1sum -c -
+          python dev/fabric-smoke.py --workspace "$RUNNER_TEMP" --launcher "$RUNNER_TEMP/fabric-launch.jar" --fabric-api "$RUNNER_TEMP/fabric-api.jar" --minecraft "$RUNNER_TEMP/minecraft.jar" --accept-eula
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: storefront-fabric-smoke-logs
+          path: |
+            ${{ runner.temp }}/storefront-smoke-*/lifecycle.log
+            ${{ runner.temp }}/storefront-smoke-*/restart.log
+            ${{ runner.temp }}/storefront-smoke-*/result.json
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@v7
+        with:
+          name: storefront-fabric
+          path: |
+            fabric/build/libs/storefront-fabric-*.jar
+            !fabric/build/libs/*-thin.jar
+            !fabric/build/libs/*-smoke.jar
+          if-no-files-found: error
   javascript:
     runs-on: ubuntu-latest
     env:
@@ -39,8 +75,8 @@ jobs:
       - run: npm test
       - run: npm run build
   release:
-    if: github.event_name == 'release'
-    needs: [plugin, javascript]
+    if: github.event_name == 'release' && github.event.release.target_commitish == 'main'
+    needs: [plugin, fabric, javascript]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -49,7 +85,11 @@ jobs:
         with:
           name: storefront-plugin
           path: release
-      - name: Attach plugin JAR
+      - uses: actions/download-artifact@v8
+        with:
+          name: storefront-fabric
+          path: release
+      - name: Attach server JARs
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}

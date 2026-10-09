@@ -27,19 +27,18 @@ class SignListener(private val plugin: Storefront, private val storage: Storage)
     private fun getStorefrontSign(block: Block): Sign? {
         val sign = block.state as? Sign ?: return null
         val firstLine = PlainTextComponentSerializer.plainText().serialize(sign.getSide(Side.FRONT).line(0))
-        return sign.takeIf { firstLine.equals("[storefront]", ignoreCase = true) }
+        return sign.takeIf { isStorefrontSign(firstLine) }
     }
 
     @EventHandler(ignoreCancelled = true)
     fun onSignChange(event: SignChangeEvent) {
         if (event.side != Side.FRONT) return
         val firstLine = event.line(0)?.let { PlainTextComponentSerializer.plainText().serialize(it) }
-        if (!firstLine.equals("[storefront]", ignoreCase = true)) return
+        if (!isStorefrontSign(firstLine)) return
         val sign = event.block.state as? Sign ?: return
         val chest = getChestFromSign(sign) ?: return
         val playerId = event.player.uniqueId.toString()
-        val ownerId = storage.ownerUUID(serializeLocation(chest.location))
-        if (ownerId != null && ownerId != playerId) {
+        if (!storage.mayEdit(playerId, serializeLocation(chest.location))) {
             event.isCancelled = true
             return
         }

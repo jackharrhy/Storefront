@@ -5,6 +5,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
 import java.sql.DriverManager
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 class StorageTest {
     @TempDir lateinit var directory: Path
@@ -32,6 +35,61 @@ class StorageTest {
         assertEquals(2, storefront.contents.asJsonArray[1].asJsonObject["amount"].asInt)
         assertEquals(storefront, Storage(database).storefrontContentsById(42))
         assertNull(storage.storefrontContentsById(999))
+    }
+
+    @Test
+    fun `saving an existing listing cannot replace another owner's data`() {
+        val storage = Storage(directory.resolve("protected.db").toString())
+        val location = "world:1.0:64.0:2.0"
+        assertTrue(storage.newStorefront(Owner("alice", "Alice"), location, "[null]", arrayOf("Original")))
+        val original = storage.allContents.single()
+        assertFalse(storage.newStorefront(Owner("bob", "Bob"), location, "[]", arrayOf("Stolen")))
+        assertEquals(original, storage.allContents.single())
+        assertTrue(storage.newStorefront(Owner("alice", "Alice"), location, "[]", arrayOf("Updated")))
+        assertEquals(original.id, storage.allContents.single().id)
+        assertEquals("Updated", storage.allContents.single().description.asJsonArray[0].asString)
+    }
+
+    @Test
+    fun `competing first saves cannot claim the same location or replace its winning ID`() {
+        val storage = Storage(directory.resolve("competing.db").toString())
+        val location = "world:1.0:64.0:2.0"
+        val start = CountDownLatch(1)
+        val owners = listOf(Owner("alice", "Alice"), Owner("bob", "Bob"))
+        Executors.newFixedThreadPool(2).use { worker ->
+            val saves = owners.map { owner -> worker.submit<Boolean> {
+                check(start.await(5, TimeUnit.SECONDS))
+                storage.newStorefront(owner, location, "[]", arrayOf(owner.name))
+            } }
+            start.countDown()
+            val accepted = saves.map { it.get(10, TimeUnit.SECONDS) }
+            assertEquals(1, accepted.count { it })
+            val winner = owners[accepted.indexOf(true)]
+            val original = storage.allContents.single()
+            assertEquals(winner.uuid, storage.ownerUUID(location))
+            assertTrue(storage.newStorefront(winner, location, "[null]", arrayOf("Updated")))
+            assertEquals(original.id, storage.allContents.single().id)
+        }
+    }
+
+    @Test
+    fun `updates enforce ownership atomically and preserve the original owner and listing ID`() {
+        val storage = Storage(directory.resolve("update.db").toString())
+        val location = "world:1.0:64.0:2.0"
+        assertTrue(storage.mayEdit("alice", location))
+        assertFalse(storage.updateStorefront("alice", location, "[]", arrayOf("Missing")))
+        storage.newStorefront(Owner("alice", "Alice"), location, "[]", arrayOf("Original"))
+        val original = storage.allContents.single()
+        assertTrue(storage.mayEdit("alice", location))
+        assertFalse(storage.mayEdit("bob", location))
+        assertFalse(storage.updateStorefront("bob", location, "[null]", arrayOf("Stolen")))
+        assertEquals(original, storage.allContents.single())
+        assertTrue(storage.updateStorefront("alice", location, "[null]", arrayOf("Updated")))
+        val updated = storage.allContents.single()
+        assertEquals(original.id, updated.id)
+        assertEquals(original.owner, updated.owner)
+        assertEquals("[null]", updated.contents.toString())
+        assertEquals("Updated", updated.description.asJsonArray[0].asString)
     }
 
     @Test

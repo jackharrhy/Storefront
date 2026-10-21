@@ -1,4 +1,5 @@
-FROM node:24-alpine AS build
+FROM node:24.22.1-alpine AS build
+RUN apk upgrade --no-cache && apk add --no-cache ca-certificates && update-ca-certificates
 WORKDIR /app
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 COPY package.json package-lock.json tsconfig.base.json ./
@@ -12,6 +13,7 @@ ARG BASE_PATH=/
 RUN npm run build -w storefront-frontend -- --base=${BASE_PATH}
 
 FROM nginx:stable-alpine
+RUN apk upgrade --no-cache && apk add --no-cache ca-certificates curl && update-ca-certificates
 ENV API_PROXY_TARGET=http://host.docker.internal:7000
 COPY apps/frontend/nginx.conf /etc/nginx/templates/default.conf.template
 COPY --from=build /app/apps/frontend/dist /usr/share/nginx/html

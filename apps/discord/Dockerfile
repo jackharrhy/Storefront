@@ -1,4 +1,7 @@
-FROM node:24-bookworm-slim AS build
+FROM node:24.22.1-bookworm-slim AS build
+RUN apt-get update && apt-get upgrade -y \
+    && apt-get install -y --no-install-recommends ca-certificates \
+    && update-ca-certificates && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 COPY package.json package-lock.json tsconfig.base.json ./
@@ -11,7 +14,10 @@ COPY apps/discord apps/discord
 RUN npm run build -w storefront-discord
 RUN npm ci --omit=dev --workspace=storefront-discord --workspace=@storefront/shared --ignore-scripts
 
-FROM node:24-bookworm-slim
+FROM node:24.22.1-bookworm-slim
+RUN apt-get update && apt-get upgrade -y \
+    && apt-get install -y --no-install-recommends ca-certificates \
+    && update-ca-certificates && rm -rf /var/lib/apt/lists/*
 RUN apt-get update && apt-get install -y --no-install-recommends chromium fonts-liberation \
     && rm -rf /var/lib/apt/lists/*
 ENV PUPPETEER_SKIP_DOWNLOAD=true \

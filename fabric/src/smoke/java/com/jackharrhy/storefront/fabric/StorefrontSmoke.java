@@ -44,6 +44,7 @@ import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.WallSignBlock;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
+import net.minecraft.world.level.block.entity.SignTextSlot;
 import net.minecraft.world.level.block.state.properties.ChestType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -60,7 +61,7 @@ public final class StorefrontSmoke implements ModInitializer {
                     if (restored.size() != 1 || restored.getFirst().getContents().getAsJsonArray().size() != 54
                         || !restored.getFirst().getContents().toString().contains("minecraft:gold_ingot")) throw new AssertionError("Listing did not survive restart");
                     var saved = (SignBlockEntity) server.overworld().getBlockEntity(new BlockPos(0, 80, -1));
-                    if (saved == null || !saved.getFrontText().getMessage(1, false).getString().equals("Double chest")) throw new AssertionError("Sign did not survive restart");
+                    if (saved == null || !saved.getText(SignTextSlot.FRONT).getMessages(false).get(1).getString().equals("Double chest")) throw new AssertionError("Sign did not survive restart");
                     String current = FabricStorefront.inventory(server.overworld(), new BlockPos(0, 80, 0));
                     if (!JsonParser.parseString(current).equals(restored.getFirst().getContents())) throw new AssertionError("World inventory differs after restart");
                     System.out.println("STOREFRONT SMOKE PASS: persisted listing and world sign/inventory");
@@ -100,7 +101,7 @@ public final class StorefrontSmoke implements ModInitializer {
                 alice.setPos(0, 80, -1);
                 var sign = (SignBlockEntity) world.getBlockEntity(signPos);
                 sign.setAllowedPlayerEditor(alice.getUUID());
-                sign.updateSignText(alice, true, List.of(FilteredText.passThrough("[storefront]"),
+                sign.updateSignText(alice, SignTextSlot.FRONT, List.of(FilteredText.passThrough("[storefront]"),
                     FilteredText.passThrough("Diamonds"), FilteredText.passThrough("For sale"), FilteredText.passThrough("")));
                 var storage = new Storage("config/storefront/storefront.db");
                 if (storage.getAllContents().size() != 1) throw new AssertionError("Editing a chest sign must create a listing");
@@ -177,8 +178,8 @@ public final class StorefrontSmoke implements ModInitializer {
                             var original = storage.storefrontContentsById(listing.getId());
                             UseBlockCallback.EVENT.invoker().interact(bob, world, InteractionHand.MAIN_HAND, hit);
                             sign.setAllowedPlayerEditor(bob.getUUID());
-                            sign.updateSignText(bob, true, List.of(FilteredText.passThrough("[storefront]"), FilteredText.passThrough("Stolen"), FilteredText.passThrough(""), FilteredText.passThrough("")));
-                            if (!original.equals(storage.storefrontContentsById(listing.getId())) || !sign.getFrontText().getMessage(1, false).getString().equals("Diamonds")) throw new AssertionError("Non-owner edit changed listing/sign");
+                            sign.updateSignText(bob, SignTextSlot.FRONT, List.of(FilteredText.passThrough("[storefront]"), FilteredText.passThrough("Stolen"), FilteredText.passThrough(""), FilteredText.passThrough("")));
+                            if (!original.equals(storage.storefrontContentsById(listing.getId())) || !sign.getText(SignTextSlot.FRONT).getMessages(false).get(1).getString().equals("Diamonds")) throw new AssertionError("Non-owner edit changed listing/sign");
                             var breaks = PlayerBlockBreakEvents.BEFORE;
                             if (breaks.invoker().beforeBlockBreak(world, bob, signPos, sign.getBlockState(), sign)) throw new AssertionError("Non-owner can break listing sign");
                             if (!breaks.invoker().beforeBlockBreak(world, alice, signPos, sign.getBlockState(), sign)) throw new AssertionError("Owner cannot break sign");
@@ -197,7 +198,7 @@ public final class StorefrontSmoke implements ModInitializer {
                             world.setBlock(signPos, state, 3);
                             var doubleSign = (SignBlockEntity) world.getBlockEntity(signPos);
                             doubleSign.setAllowedPlayerEditor(alice.getUUID());
-                            doubleSign.updateSignText(alice, true, List.of(FilteredText.passThrough("[storefront]"), FilteredText.passThrough("Double chest"), FilteredText.passThrough(""), FilteredText.passThrough("")));
+                            doubleSign.updateSignText(alice, SignTextSlot.FRONT, List.of(FilteredText.passThrough("[storefront]"), FilteredText.passThrough("Double chest"), FilteredText.passThrough(""), FilteredText.passThrough("")));
                             var doubled = storage.getAllContents().getFirst();
                             if (doubled.getContents().getAsJsonArray().size() != 54 || !doubled.getContents().toString().contains("minecraft:gold_ingot")) throw new AssertionError("Double chest contents missing");
                         }).get(10, TimeUnit.SECONDS);

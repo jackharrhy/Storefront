@@ -50,6 +50,7 @@ import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.WallSignBlock;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
+import net.minecraft.world.level.block.entity.SignTextSlot;
 import net.minecraft.world.level.block.state.properties.ChestType;
 
 public final class FabricStorefront implements ModInitializer {
@@ -118,7 +119,7 @@ public final class FabricStorefront implements ModInitializer {
     }
 
     static boolean isListing(SignBlockEntity sign) {
-        return ListingKt.isStorefrontSign(sign.getFrontText().getMessage(0, false).getString());
+        return ListingKt.isStorefrontSign(sign.getText(SignTextSlot.FRONT).getMessages(false).get(0).getString());
     }
 
     static String location(ServerLevel world, BlockPos pos) {
@@ -139,7 +140,7 @@ public final class FabricStorefront implements ModInitializer {
         var contents = inventory(world, pos);
         if (contents == null) return;
         var description = new String[4];
-        for (int i = 0; i < 4; i++) description[i] = sign.getFrontText().getMessage(i, false).getString();
+        for (int i = 0; i < 4; i++) description[i] = sign.getText(SignTextSlot.FRONT).getMessages(false).get(i).getString();
         boolean saved = storage.newStorefront(new Owner(player.getUUID().toString(), player.getName().getString()),
             location(world, pos), contents, description);
         player.sendSystemMessage(Component.literal(saved ? "Storefront saved" : "This isn't your storefront!"));
